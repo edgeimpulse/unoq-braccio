@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="unoq_braccio">
   <xacro:arg name="controllers_file" default=""/>
+  <xacro:arg name="mesh_dir" default=""/>
 
   <material name="braccio_orange"><color rgba="1.0 0.34 0.02 1"/></material>
   <material name="braccio_orange_dark"><color rgba="0.76 0.18 0.02 1"/></material>
@@ -41,7 +42,7 @@
     <visual>
       <origin xyz="${x} ${y} ${z}" rpy="${rr} ${rp} ${ry}"/>
       <geometry>
-        <mesh filename="package://unoq_braccio_sim/meshes/braccio_stedden/${filename}" scale="0.001 0.001 0.001"/>
+        <mesh filename="file://$(arg mesh_dir)/${filename}" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="${material}"/>
     </visual>

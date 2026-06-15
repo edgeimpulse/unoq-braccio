@@ -15,9 +15,17 @@ def generate_launch_description():
     xacro_path = os.path.join(share, "urdf", "braccio.urdf.xacro")
     world_path = os.path.join(share, "worlds", "empty.world")
     controllers_path = os.path.join(share, "config", "controllers.yaml")
+    mesh_dir = os.path.join(share, "meshes", "braccio_stedden")
     robot_description = {
         "robot_description": Command(
-            ["xacro ", xacro_path, " controllers_file:=", controllers_path]
+            [
+                "xacro ",
+                xacro_path,
+                " controllers_file:=",
+                controllers_path,
+                " mesh_dir:=",
+                mesh_dir,
+            ]
         )
     }
 
