@@ -7,6 +7,11 @@ and Gazebo.
   <img src="docs/IMG-20260615-WA0006.jpg" width="800">
 </p>
 
+<img width="1650" height="1433" alt="IMG_20260615_142606610_HDR~2" src="https://github.com/user-attachments/assets/db8d983e-142a-4fbe-8bbe-c46fc83fc3e3" />
+
+<img width="1017" height="830" alt="Screenshot 2026-06-16 000253" src="https://github.com/user-attachments/assets/7736b383-4374-40f8-bcf9-347998eaff60" />
+
+
 This repository contains:
 
 - Arduino firmware using the official
