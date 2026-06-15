@@ -114,6 +114,29 @@ h2 {
   width: 100%;
 }
 
+.camera-controls {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: max-content minmax(130px, 1fr) minmax(120px, 1fr) max-content;
+  margin-bottom: 10px;
+}
+
+.camera-controls label {
+  color: #5d6b7d;
+  font-size: 13px;
+}
+
+.camera-controls select,
+.camera-controls input {
+  border: 1px solid #cdd8e6;
+  border-radius: 6px;
+  font: inherit;
+  min-height: 36px;
+  min-width: 0;
+  padding: 7px 9px;
+}
+
 .hint {
   color: #697789;
   font-size: 13px;
@@ -211,6 +234,10 @@ input[type="range"] {
 
 @media (max-width: 860px) {
   .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .camera-controls {
     grid-template-columns: 1fr;
   }
 }

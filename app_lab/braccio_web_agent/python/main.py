@@ -1,6 +1,7 @@
 from arduino.app_utils import App, Bridge
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 import os
 import socket
 import threading
@@ -17,12 +18,15 @@ else:
 
 CONTROL_PORT = 8765
 CAMERA_PORT = 8080
-CAMERA_DEVICE = os.environ.get("BRACCIO_CAMERA_DEVICE", "/dev/video4")
+DEFAULT_CAMERA_DEVICE = os.environ.get("BRACCIO_CAMERA_DEVICE", "/dev/video4")
 START_TIME = time.monotonic()
 
 frame_lock = threading.Lock()
+camera_lock = threading.Lock()
 latest_jpeg = None
 camera_message = "camera starting"
+camera_device = DEFAULT_CAMERA_DEVICE
+camera_generation = 0
 move_count = 0
 last_move_ms = 0
 last_command_ms = 0
@@ -74,37 +78,50 @@ def arm_server():
                 print(f"{address[0]}: {data.strip()} -> {response}")
 
 
-def find_camera():
-    preferred = Path(CAMERA_DEVICE)
+def list_camera_devices():
+    devices = [str(path) for path in sorted(Path("/dev").glob("video*"))]
+    return devices
+
+
+def open_camera(device_name):
+    if device_name.startswith("/dev/"):
+        capture = cv2.VideoCapture(device_name)
+    else:
+        try:
+            capture = cv2.VideoCapture(int(device_name))
+        except ValueError:
+            capture = cv2.VideoCapture(device_name)
+
+    if capture.isOpened():
+        ok, _ = capture.read()
+        if ok:
+            return capture
+    capture.release()
+    return None
+
+
+def find_camera(device_name):
+    preferred = Path(device_name)
     if preferred.exists():
-        capture = cv2.VideoCapture(str(preferred))
-        if capture.isOpened():
-            ok, _ = capture.read()
-            if ok:
-                print(f"Using configured camera {preferred}")
-                return capture
-        capture.release()
+        capture = open_camera(str(preferred))
+        if capture is not None:
+            print(f"Using configured camera {preferred}")
+            return capture
         print(f"Configured camera {preferred} did not produce frames")
 
     for device in sorted(Path("/dev").glob("video*")):
         if str(device) == str(preferred):
             continue
-        capture = cv2.VideoCapture(str(device))
-        if capture.isOpened():
-            ok, _ = capture.read()
-            if ok:
-                print(f"Using camera {device}")
-                return capture
-        capture.release()
+        capture = open_camera(str(device))
+        if capture is not None:
+            print(f"Using camera {device}")
+            return capture
 
     for index in range(4):
-        capture = cv2.VideoCapture(index)
-        if capture.isOpened():
-            ok, _ = capture.read()
-            if ok:
-                print(f"Using camera index {index}")
-                return capture
-        capture.release()
+        capture = open_camera(str(index))
+        if capture is not None:
+            print(f"Using camera index {index}")
+            return capture
 
     return None
 
@@ -116,43 +133,70 @@ def camera_loop():
         print(f"OpenCV unavailable; camera stream disabled: {CV2_IMPORT_ERROR}")
         return
 
-    capture = find_camera()
-    if capture is None:
-        camera_message = "No usable /dev/video* camera found"
-        print("No usable camera found; camera stream will stay unavailable")
-        return
-
-    camera_message = "camera online"
-    capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-    capture.set(cv2.CAP_PROP_FPS, 15)
-
     while True:
-        ok, frame = capture.read()
-        if not ok:
-            time.sleep(0.2)
-            continue
-        ok, encoded = cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
-        if ok:
+        with camera_lock:
+            selected = camera_device
+            generation = camera_generation
+        capture = find_camera(selected)
+        if capture is None:
+            camera_message = f"No usable camera found for {selected}"
             with frame_lock:
-                latest_jpeg = encoded.tobytes()
-        time.sleep(0.02)
+                latest_jpeg = None
+            print(camera_message)
+            time.sleep(2)
+            continue
+
+        camera_message = f"camera online: {selected}"
+        capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        capture.set(cv2.CAP_PROP_FPS, 15)
+
+        while True:
+            with camera_lock:
+                if generation != camera_generation:
+                    break
+            ok, frame = capture.read()
+            if not ok:
+                time.sleep(0.2)
+                continue
+            ok, encoded = cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+            if ok:
+                with frame_lock:
+                    latest_jpeg = encoded.tobytes()
+            time.sleep(0.02)
+
+        capture.release()
+        with frame_lock:
+            latest_jpeg = None
 
 
 class StreamHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path not in ("/", "/stream", "/camera-status"):
+        parsed = urlparse(self.path)
+        if parsed.path not in ("/", "/stream", "/camera-status", "/camera-devices"):
             self.send_error(404)
             return
 
-        if self.path == "/camera-status":
+        if parsed.path == "/camera-status":
             self.send_response(200)
             self.send_header("Content-Type", "text/plain")
             self.end_headers()
             self.wfile.write(camera_message.encode("utf-8"))
             return
 
-        if self.path == "/":
+        if parsed.path == "/camera-devices":
+            devices = list_camera_devices() if cv2 is not None else []
+            with camera_lock:
+                selected = camera_device
+            body = ("\n".join([selected] + devices) + "\n").encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
+        if parsed.path == "/":
             self.send_response(200)
             self.send_header("Content-Type", "text/plain")
             self.end_headers()
@@ -198,6 +242,35 @@ class StreamHandler(BaseHTTPRequestHandler):
                 time.sleep(0.07)
             except (BrokenPipeError, ConnectionResetError):
                 break
+
+    def do_POST(self):
+        global camera_device, camera_generation, camera_message, latest_jpeg
+        parsed = urlparse(self.path)
+        if parsed.path != "/camera-select":
+            self.send_error(404)
+            return
+
+        query = parse_qs(parsed.query)
+        device = query.get("device", [""])[0].strip()
+        if not device:
+            length = int(self.headers.get("Content-Length", "0"))
+            device = self.rfile.read(length).decode("utf-8").strip() if length else ""
+        if not device:
+            self.send_error(400, "missing camera device")
+            return
+
+        with camera_lock:
+            camera_device = device
+            camera_generation += 1
+        with frame_lock:
+            latest_jpeg = None
+        camera_message = f"switching camera to {device}"
+        body = f"OK {device}\n".encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def log_message(self, format, *args):
         return

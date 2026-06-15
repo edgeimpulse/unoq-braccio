@@ -15,11 +15,22 @@ Endpoints:
 ```text
 tcp://<UNO_Q_IP_ADDRESS>:8765
 http://<UNO_Q_IP_ADDRESS>:8080/stream
+http://<UNO_Q_IP_ADDRESS>:8080/camera-devices
+http://<UNO_Q_IP_ADDRESS>:8080/camera-status
 ```
 
 The default camera device is `/dev/video4`, based on testing on this UNO Q. To
 override it, set `BRACCIO_CAMERA_DEVICE` before starting the app if App Lab
 exposes environment configuration.
+
+You can also switch the camera while the app is running:
+
+```bash
+curl http://127.0.0.1:8080/camera-devices
+curl -X POST "http://127.0.0.1:8080/camera-select?device=/dev/video0"
+```
+
+The web dashboard exposes this as a Camera selector plus a custom device field.
 
 ## Start It
 
@@ -82,6 +93,7 @@ Camera diagnostics over SSH:
 ```bash
 ls -l /dev/video*
 curl http://127.0.0.1:8080/camera-status
+curl http://127.0.0.1:8080/camera-devices
 ```
 
 If you have SSH and `arduino-app-cli` enabled on the UNO Q, you can copy the

@@ -7,6 +7,9 @@ const connection = document.getElementById("connection");
 const camera = document.getElementById("camera");
 const cameraUrl = document.getElementById("cameraUrl");
 const cameraStatus = document.getElementById("cameraStatus");
+const cameraDevice = document.getElementById("cameraDevice");
+const cameraCustom = document.getElementById("cameraCustom");
+const cameraApplyBtn = document.getElementById("cameraApplyBtn");
 const poses = document.getElementById("poses");
 const sliders = document.getElementById("sliders");
 const stats = document.getElementById("stats");
@@ -125,6 +128,63 @@ function renderStats(status) {
   });
 }
 
+function reloadCamera() {
+  const separator = state.config.camera_url.includes("?") ? "&" : "?";
+  camera.src = `${state.config.camera_url}${separator}t=${Date.now()}`;
+  cameraUrl.textContent = state.config.camera_url;
+}
+
+async function refreshCameras() {
+  try {
+    const result = await api("/api/cameras");
+    cameraDevice.innerHTML = "";
+    result.devices.forEach((device) => {
+      const option = document.createElement("option");
+      option.value = device;
+      option.textContent = device;
+      option.selected = device === result.selected;
+      cameraDevice.appendChild(option);
+    });
+    const custom = document.createElement("option");
+    custom.value = "__custom__";
+    custom.textContent = "Custom...";
+    cameraDevice.appendChild(custom);
+    cameraCustom.value = result.selected || "/dev/video4";
+    cameraStatus.textContent = `Camera device: ${result.selected || "unknown"}`;
+  } catch (error) {
+    cameraStatus.textContent = `Camera device list unavailable: ${error.message}`;
+    cameraDevice.innerHTML = "";
+    const option = document.createElement("option");
+    option.value = "__custom__";
+    option.textContent = "Custom...";
+    cameraDevice.appendChild(option);
+    cameraCustom.value = "/dev/video4";
+  }
+}
+
+async function applyCamera() {
+  const selected = cameraDevice.value === "__custom__" ? cameraCustom.value : cameraDevice.value;
+  const device = selected.trim();
+  if (!device) {
+    cameraStatus.textContent = "Enter a camera device such as /dev/video4.";
+    return;
+  }
+  try {
+    const result = await api("/api/camera", {
+      method: "POST",
+      body: JSON.stringify({ device }),
+    });
+    cameraCustom.value = device;
+    cameraStatus.textContent = result.response;
+    writeLog(`Camera ${device}: ${result.response}`);
+    await refreshCameras();
+    window.setTimeout(reloadCamera, 700);
+  } catch (error) {
+    cameraStatus.textContent = `Camera switch failed: ${error.message}`;
+    writeLog(`Camera switch failed: ${error.message}`);
+  }
+}
+
 async function refreshStatus() {
   try {
     const result = await api("/api/status");
@@ -142,14 +202,19 @@ async function refreshStatus() {
 async function init() {
   state.config = await api("/api/config");
   state.values = state.config.poses.ready.slice();
-  camera.src = state.config.camera_url;
-  cameraUrl.textContent = state.config.camera_url;
+  reloadCamera();
   cameraStatus.textContent = "If the image is blank, open the camera URL directly to see the UNO Q camera status.";
   camera.addEventListener("error", () => {
     cameraStatus.textContent = "Camera stream not available. Check the UNO Q app log and /dev/video camera path.";
   });
+  cameraDevice.addEventListener("change", () => {
+    if (cameraDevice.value !== "__custom__") {
+      cameraCustom.value = cameraDevice.value;
+    }
+  });
   renderPoses();
   renderSliders();
+  await refreshCameras();
   await refreshStatus();
   setInterval(refreshStatus, 2000);
 }
@@ -170,6 +235,7 @@ document.getElementById("stopBtn").addEventListener("click", async () => {
 });
 
 document.getElementById("refreshBtn").addEventListener("click", refreshStatus);
+cameraApplyBtn.addEventListener("click", applyCamera);
 
 init().catch((error) => {
   connection.textContent = `Startup failed: ${error.message}`;

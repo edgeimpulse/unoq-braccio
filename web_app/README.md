@@ -29,6 +29,10 @@ Open:
 http://localhost:5000
 ```
 
+The dashboard includes a Camera selector. It reads detected UNO Q devices from
+`http://<UNO_Q_IP_ADDRESS>:8080/camera-devices` and can switch the stream to a
+different device such as `/dev/video0`, `/dev/video1`, or `/dev/video4`.
+
 From another device on the same network:
 
 ```text

@@ -3,6 +3,8 @@ import json
 import socket
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib import request
+from urllib.parse import quote
 from urllib.parse import parse_qs, urlparse
 
 
@@ -100,6 +102,8 @@ class Handler(BaseHTTPRequestHandler):
             )
         elif parsed.path == "/api/status":
             self.handle_status()
+        elif parsed.path == "/api/cameras":
+            self.handle_cameras()
         else:
             self.send_error(404)
 
@@ -111,6 +115,8 @@ class Handler(BaseHTTPRequestHandler):
             self.handle_pose()
         elif parsed.path == "/api/stop":
             self.handle_stop()
+        elif parsed.path == "/api/camera":
+            self.handle_camera_select()
         else:
             self.send_error(404)
 
@@ -127,6 +133,20 @@ class Handler(BaseHTTPRequestHandler):
         try:
             status = self.client().status()
             self.json_response({"ok": True, "status": parse_status(status)})
+        except OSError as error:
+            self.json_response({"ok": False, "error": str(error)}, status=503)
+
+    def handle_cameras(self) -> None:
+        try:
+            with request.urlopen(self.server.camera_devices_url, timeout=2) as response:
+                body = response.read().decode("utf-8", errors="replace")
+            lines = [line.strip() for line in body.splitlines() if line.strip()]
+            selected = lines[0] if lines else ""
+            devices = []
+            for line in lines:
+                if line not in devices:
+                    devices.append(line)
+            self.json_response({"ok": True, "selected": selected, "devices": devices})
         except OSError as error:
             self.json_response({"ok": False, "error": str(error)}, status=503)
 
@@ -160,6 +180,21 @@ class Handler(BaseHTTPRequestHandler):
         except OSError as error:
             self.json_response({"ok": False, "error": str(error)}, status=503)
 
+    def handle_camera_select(self) -> None:
+        payload = self.read_json()
+        device = str(payload.get("device", "")).strip()
+        if not device:
+            self.json_response({"ok": False, "error": "Missing camera device"}, status=400)
+            return
+        url = f"{self.server.camera_select_url}?device={quote(device)}"
+        try:
+            req = request.Request(url, method="POST", data=b"")
+            with request.urlopen(req, timeout=3) as response:
+                body = response.read().decode("utf-8", errors="replace").strip()
+            self.json_response({"ok": True, "response": body, "camera_url": self.server.camera_url})
+        except OSError as error:
+            self.json_response({"ok": False, "error": str(error)}, status=503)
+
     def serve_file(self, filename: str, content_type: str) -> None:
         path = Path(__file__).with_name("static") / filename
         data = path.read_bytes()
@@ -182,11 +217,13 @@ class Handler(BaseHTTPRequestHandler):
 
 
 class WebServer(ThreadingHTTPServer):
-    def __init__(self, server_address, handler, unoq_host, control_port, camera_url):
+    def __init__(self, server_address, handler, unoq_host, control_port, camera_url, camera_base_url):
         super().__init__(server_address, handler)
         self.unoq_host = unoq_host
         self.control_port = control_port
         self.camera_url = camera_url
+        self.camera_devices_url = f"{camera_base_url}/camera-devices"
+        self.camera_select_url = f"{camera_base_url}/camera-select"
 
 
 def main() -> None:
@@ -198,13 +235,15 @@ def main() -> None:
     parser.add_argument("--camera-url", default="")
     args = parser.parse_args()
 
-    camera_url = args.camera_url or f"http://{args.unoq_host}:8080/stream"
+    camera_base_url = f"http://{args.unoq_host}:8080"
+    camera_url = args.camera_url or f"{camera_base_url}/stream"
     server = WebServer(
         (args.host, args.port),
         Handler,
         unoq_host=args.unoq_host,
         control_port=args.control_port,
         camera_url=camera_url,
+        camera_base_url=camera_base_url,
     )
     print(f"Web control: http://{args.host}:{args.port}")
     print(f"UNO Q control: {args.unoq_host}:{args.control_port}")

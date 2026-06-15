@@ -38,6 +38,12 @@
           <h2>Camera Stream <span>(Gripper View)</span></h2>
           <span id="cameraUrl"></span>
         </div>
+        <div class="camera-controls">
+          <label for="cameraDevice">Camera</label>
+          <select id="cameraDevice"></select>
+          <input id="cameraCustom" type="text" placeholder="/dev/video4">
+          <button id="cameraApplyBtn">Apply</button>
+        </div>
         <img id="camera" alt="UNO Q camera stream">
         <p id="cameraStatus" class="hint"></p>
       </section>
