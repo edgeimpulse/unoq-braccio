@@ -37,6 +37,21 @@ Use Arduino App Lab:
    so it does not require the desktop `Braccio` library inside App Lab.
 6. Run the app.
 
+If App Lab says it cannot import `python\__pycache__`, remove generated cache
+folders before importing. From the repo root:
+
+```powershell
+Get-ChildItem -Path .\app_lab -Recurse -Directory -Filter __pycache__ | Remove-Item -Recurse -Force
+```
+
+Or create a clean import ZIP:
+
+```powershell
+.\scripts\package_app_lab.ps1 braccio_web_agent
+```
+
+Then import the ZIP from `dist/`.
+
 Then test from PowerShell:
 
 ```powershell
