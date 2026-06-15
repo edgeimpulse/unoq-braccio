@@ -32,9 +32,10 @@ Use Arduino App Lab:
 2. Connect to the UNO Q.
 3. Create or open an app named `braccio_web_agent`.
 4. Replace the generated files with this folder's contents.
-5. Add the `Servo`, `Arduino_RouterBridge`, and `opencv-python` dependencies if
-   App Lab asks. This app uses direct Servo control for the Braccio shield pins
-   so it does not require the desktop `Braccio` library inside App Lab.
+5. Add the `Servo` and `opencv-python` dependencies if App Lab asks. The
+   `Arduino_RouterBridge` library is provided by recent `arduino:zephyr`
+   platforms. This app uses direct Servo control for the Braccio shield pins so
+   it does not require the desktop `Braccio` library inside App Lab.
 6. Run the app.
 
 If App Lab says it cannot import `python\__pycache__`, remove generated cache

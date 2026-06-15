@@ -4,5 +4,4 @@ profiles:
       - platform: arduino:zephyr
     libraries:
       - Servo
-      - Arduino_RouterBridge
 default_profile: default
