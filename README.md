@@ -25,6 +25,7 @@ firmware/unoq_braccio_firmware/   USB serial firmware for UNO Q + Braccio
 app_lab/braccio_smoke_test/       Arduino App Lab hardware smoke test
 app_lab/braccio_remote_agent/     Arduino App Lab network control agent
 app_lab/usb_camera_streamer/      UNO Q attached USB camera MJPEG streamer
+app_lab/braccio_web_agent/        Combined web dashboard control/camera agent
 web_app/                          Browser dashboard for remote arm control
 ros2_ws/src/unoq_braccio_bringup/ ROS 2 launch files and runtime config
 ros2_ws/src/unoq_braccio_driver/  Serial driver and demo command nodes
@@ -260,6 +261,14 @@ Project labels used for pick/place examples: `Red Block`, `Blue Block`, and
 ## Web Control
 
 Run the UNO Q remote control and camera App Lab apps, then start the dashboard:
+
+Recommended single App Lab app:
+
+```text
+app_lab/braccio_web_agent
+```
+
+This exposes arm control on `8765` and camera streaming on `8080`.
 
 ```bash
 cd web_app

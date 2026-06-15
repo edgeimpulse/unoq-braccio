@@ -1,0 +1,8 @@
+name: UNOQ Braccio Web Agent
+description: "Combined arm control and USB camera stream for the Braccio web dashboard"
+icon:
+version: "0.1.0"
+ports:
+  - 8765
+  - 8080
+bricks: []

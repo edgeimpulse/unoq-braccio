@@ -7,6 +7,9 @@ It talks directly to:
 - `app_lab/braccio_remote_agent` on TCP port `8765`
 - `app_lab/usb_camera_streamer` on HTTP port `8080`
 
+Recommended: run `app_lab/braccio_web_agent`, which combines both services in
+one App Lab app.
+
 ROS 2 is not required for this web UI.
 
 ## Start
@@ -41,4 +44,3 @@ Run this App Lab app for camera view:
 ```text
 app_lab/usb_camera_streamer
 ```
-
