@@ -17,6 +17,10 @@ tcp://<UNO_Q_IP_ADDRESS>:8765
 http://<UNO_Q_IP_ADDRESS>:8080/stream
 ```
 
+The default camera device is `/dev/video4`, based on testing on this UNO Q. To
+override it, set `BRACCIO_CAMERA_DEVICE` before starting the app if App Lab
+exposes environment configuration.
+
 ## Start It
 
 `app_lab/braccio_web_agent` is a folder, not a PowerShell command. Do not run
@@ -71,6 +75,13 @@ Expected:
 ```text
 STAT uptime_ms=...
 UNO Q Braccio web agent. Use /stream
+```
+
+Camera diagnostics over SSH:
+
+```bash
+ls -l /dev/video*
+curl http://127.0.0.1:8080/camera-status
 ```
 
 If you have SSH and `arduino-app-cli` enabled on the UNO Q, you can copy the

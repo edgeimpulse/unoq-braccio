@@ -1,6 +1,7 @@
 from arduino.app_utils import App, Bridge
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+import os
 import socket
 import threading
 import time
@@ -16,6 +17,7 @@ else:
 
 CONTROL_PORT = 8765
 CAMERA_PORT = 8080
+CAMERA_DEVICE = os.environ.get("BRACCIO_CAMERA_DEVICE", "/dev/video4")
 START_TIME = time.monotonic()
 
 frame_lock = threading.Lock()
@@ -73,7 +75,20 @@ def arm_server():
 
 
 def find_camera():
+    preferred = Path(CAMERA_DEVICE)
+    if preferred.exists():
+        capture = cv2.VideoCapture(str(preferred))
+        if capture.isOpened():
+            ok, _ = capture.read()
+            if ok:
+                print(f"Using configured camera {preferred}")
+                return capture
+        capture.release()
+        print(f"Configured camera {preferred} did not produce frames")
+
     for device in sorted(Path("/dev").glob("video*")):
+        if str(device) == str(preferred):
+            continue
         capture = cv2.VideoCapture(str(device))
         if capture.isOpened():
             ok, _ = capture.read()

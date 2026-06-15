@@ -141,6 +141,15 @@ This publishes the same topics as the local USB camera path:
 /edge_impulse/label
 ```
 
+On the current UNO Q, manual testing found the camera at:
+
+```text
+/dev/video4
+```
+
+The App Lab `braccio_web_agent` defaults to `/dev/video4` and then scans other
+`/dev/video*` devices if that device does not produce frames.
+
 ## USB Passthrough to WSL
 
 If the camera is physically attached to Windows but you want ROS 2 in WSL to

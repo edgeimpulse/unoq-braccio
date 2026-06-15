@@ -19,7 +19,7 @@ Camera stream:
 
 ```text
 USB camera on UNO Q
-  -> braccio_web_agent Python OpenCV capture
+  -> braccio_web_agent Python OpenCV capture, default /dev/video4
   -> MJPEG HTTP stream, port 8080
   -> web dashboard img element
 ```
@@ -107,3 +107,11 @@ The App Lab web agent uses direct `Servo` control on the Braccio shield pins:
 
 The standalone `firmware/unoq_braccio_firmware` still uses the official
 `Braccio` library for direct Arduino CLI firmware flashing.
+
+## Standalone Server Note
+
+A standalone Python server can expose dashboard-compatible ports `8765` and
+`8080`, and it can stream `/dev/video4`. It is not a real motor backend unless
+it calls a hardware control API. The production motor path in this repo is the
+App Lab `braccio_web_agent`, because it uses `Arduino_RouterBridge` to call the
+MCU-side `move_braccio` function.
