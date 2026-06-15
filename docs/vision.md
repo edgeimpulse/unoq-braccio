@@ -207,3 +207,22 @@ ros2 run unoq_braccio_driver visual_servo_assist --ros-args \
   -p base_gain_deg:=4.0 \
   -p shoulder_gain_deg:=3.0
 ```
+
+## Edge Impulse Object Detection
+
+Once the UNO Q camera stream works, use the Edge Impulse pick/place launch file
+to run object detection and execute item-specific workflows:
+
+```bash
+source ros2_ws/install/setup.bash
+ros2 launch unoq_braccio_bringup remote.launch.py host:=192.168.1.64 port:=8765
+ros2 launch unoq_braccio_bringup edge_impulse_pick_place.launch.py \
+  stream_url:=http://192.168.1.64:8080/stream \
+  runner_command:="python3 edge_impulse/runner_template.py --image {image}" \
+  workflow_file:=edge_impulse/pick_place_workflows.yaml
+```
+
+The runner must print JSON containing `label` and `confidence`. The label is
+published to `/edge_impulse/label`; `pick_place_executor` then finds the
+matching item in `edge_impulse/pick_place_workflows.yaml` and sends the pose
+sequence to `/braccio/joint_command`.

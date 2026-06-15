@@ -232,3 +232,13 @@ available but disabled by default:
 ```bash
 ros2 launch unoq_braccio_bringup vision_assist.launch.py enabled:=false
 ```
+
+For Edge Impulse object detection and item-specific pick/place:
+
+```bash
+source ros2_ws/install/setup.bash
+ros2 launch unoq_braccio_bringup edge_impulse_pick_place.launch.py \
+  stream_url:=http://192.168.1.64:8080/stream \
+  runner_command:="python3 edge_impulse/runner_template.py --image {image}" \
+  workflow_file:=edge_impulse/pick_place_workflows.yaml
+```
