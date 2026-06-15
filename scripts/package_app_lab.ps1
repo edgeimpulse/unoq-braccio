@@ -24,7 +24,24 @@ if ($LASTEXITCODE -ge 8) {
     throw "robocopy failed with exit code $LASTEXITCODE"
 }
 
-Compress-Archive -Path $TempDir -DestinationPath $ZipPath -Force
+@"
+import os
+import zipfile
+from pathlib import Path
+
+root = Path(r"$TempDir")
+zip_path = Path(r"$ZipPath")
+if zip_path.exists():
+    zip_path.unlink()
+
+with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+    for path in sorted(root.rglob("*")):
+        if path.is_dir():
+            continue
+        rel = path.relative_to(root.parent).as_posix()
+        archive.write(path, rel)
+"@ | python -
+
 Remove-Item -LiteralPath $TempParent -Recurse -Force
 
 Write-Output $ZipPath
