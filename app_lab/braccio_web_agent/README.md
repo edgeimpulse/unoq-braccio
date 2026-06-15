@@ -32,8 +32,9 @@ Use Arduino App Lab:
 2. Connect to the UNO Q.
 3. Create or open an app named `braccio_web_agent`.
 4. Replace the generated files with this folder's contents.
-5. Add the `Braccio`, `Servo`, `Arduino_RouterBridge`, and `opencv-python`
-   dependencies if App Lab asks.
+5. Add the `Servo`, `Arduino_RouterBridge`, and `opencv-python` dependencies if
+   App Lab asks. This app uses direct Servo control for the Braccio shield pins
+   so it does not require the desktop `Braccio` library inside App Lab.
 6. Run the app.
 
 Then test from PowerShell:

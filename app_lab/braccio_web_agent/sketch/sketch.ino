@@ -1,5 +1,4 @@
 #include <Arduino_RouterBridge.h>
-#include <Braccio.h>
 #include <Servo.h>
 
 Servo base;
@@ -12,6 +11,9 @@ Servo gripper;
 const int JOINTS = 6;
 const int MIN_LIMITS[JOINTS] = {0, 15, 0, 0, 0, 10};
 const int MAX_LIMITS[JOINTS] = {180, 165, 180, 180, 180, 73};
+const int SERVO_PINS[JOINTS] = {11, 10, 9, 6, 5, 3};
+const int SOFT_START_PIN = 12;
+int current[JOINTS] = {90, 45, 180, 180, 90, 10};
 
 int clampJoint(int index, int value) {
   if (value < MIN_LIMITS[index]) {
@@ -31,22 +33,53 @@ bool move_braccio(
   int wrist_rotation_angle,
   int gripper_angle
 ) {
-  Braccio.ServoMovement(
-    20,
+  int target[JOINTS] = {
     clampJoint(0, base_angle),
     clampJoint(1, shoulder_angle),
     clampJoint(2, elbow_angle),
     clampJoint(3, wrist_vertical_angle),
     clampJoint(4, wrist_rotation_angle),
     clampJoint(5, gripper_angle)
-  );
+  };
+
+  for (int step = 0; step < 90; step++) {
+    bool done = true;
+    for (int i = 0; i < JOINTS; i++) {
+      if (current[i] < target[i]) {
+        current[i]++;
+        done = false;
+      } else if (current[i] > target[i]) {
+        current[i]--;
+        done = false;
+      }
+    }
+
+    base.write(current[0]);
+    shoulder.write(current[1]);
+    elbow.write(current[2]);
+    wrist_ver.write(current[3]);
+    wrist_rot.write(current[4]);
+    gripper.write(current[5]);
+
+    if (done) {
+      break;
+    }
+    delay(20);
+  }
   return true;
 }
 
 void setup() {
   Bridge.begin();
   Bridge.provide("move_braccio", move_braccio);
-  Braccio.begin();
+  pinMode(SOFT_START_PIN, OUTPUT);
+  digitalWrite(SOFT_START_PIN, HIGH);
+  base.attach(SERVO_PINS[0]);
+  shoulder.attach(SERVO_PINS[1]);
+  elbow.attach(SERVO_PINS[2]);
+  wrist_ver.attach(SERVO_PINS[3]);
+  wrist_rot.attach(SERVO_PINS[4]);
+  gripper.attach(SERVO_PINS[5]);
   move_braccio(90, 45, 180, 180, 90, 10);
 }
 

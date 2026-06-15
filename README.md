@@ -271,6 +271,8 @@ app_lab/braccio_web_agent
 This exposes arm control on `8765` and camera streaming on `8080`.
 This is an App Lab project folder, not a PowerShell command. Open it or copy
 its contents in Arduino App Lab and run it on the UNO Q.
+The web agent uses direct Servo control for the Braccio shield pin mapping, so
+it does not require `Braccio.h` to be installed in the App Lab environment.
 
 ```bash
 cd web_app
