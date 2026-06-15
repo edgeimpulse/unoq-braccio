@@ -25,6 +25,7 @@ firmware/unoq_braccio_firmware/   USB serial firmware for UNO Q + Braccio
 app_lab/braccio_smoke_test/       Arduino App Lab hardware smoke test
 app_lab/braccio_remote_agent/     Arduino App Lab network control agent
 app_lab/usb_camera_streamer/      UNO Q attached USB camera MJPEG streamer
+web_app/                          Browser dashboard for remote arm control
 ros2_ws/src/unoq_braccio_bringup/ ROS 2 launch files and runtime config
 ros2_ws/src/unoq_braccio_driver/  Serial driver and demo command nodes
 ros2_ws/src/unoq_braccio_sim/     URDF, Gazebo world, ros2_control config
@@ -255,3 +256,21 @@ https://studio.edgeimpulse.com/studio/1029890
 
 Project labels used for pick/place examples: `Red Block`, `Blue Block`, and
 `Yellow Block`.
+
+## Web Control
+
+Run the UNO Q remote control and camera App Lab apps, then start the dashboard:
+
+```bash
+cd web_app
+python server.py --host 0.0.0.0 --port 5000 --unoq-host 192.168.1.64
+```
+
+Open:
+
+```text
+http://localhost:5000
+```
+
+The page shows the camera stream, robot status, preset poses, and manual joint
+sliders.

@@ -1,0 +1,158 @@
+:root {
+  color-scheme: light;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f6f8;
+  color: #18212f;
+}
+
+body {
+  margin: 0;
+}
+
+.topbar {
+  align-items: center;
+  background: #ffffff;
+  border-bottom: 1px solid #d8dee8;
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 20px;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 24px;
+}
+
+h2 {
+  font-size: 16px;
+}
+
+#connection {
+  color: #5d6b7d;
+  margin-top: 4px;
+}
+
+.layout {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(320px, 1.4fr) minmax(300px, 1fr);
+  padding: 16px;
+}
+
+.panel {
+  background: #ffffff;
+  border: 1px solid #d8dee8;
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.camera-panel {
+  grid-row: span 2;
+}
+
+.panel-head {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+#cameraUrl {
+  color: #697789;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+#camera {
+  aspect-ratio: 4 / 3;
+  background: #101820;
+  border-radius: 6px;
+  display: block;
+  object-fit: contain;
+  width: 100%;
+}
+
+button {
+  background: #1f6feb;
+  border: 0;
+  border-radius: 6px;
+  color: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+  min-height: 36px;
+  padding: 8px 12px;
+}
+
+button:hover {
+  background: #195fc9;
+}
+
+button.danger {
+  background: #c62828;
+}
+
+button.danger:hover {
+  background: #a91f1f;
+}
+
+.pose-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+}
+
+.sliders {
+  display: grid;
+  gap: 12px;
+}
+
+.slider-row {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 110px 1fr 42px;
+}
+
+.slider-row span {
+  text-transform: capitalize;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+.stats {
+  display: grid;
+  gap: 6px 12px;
+  grid-template-columns: max-content 1fr;
+}
+
+.stats dt {
+  color: #5d6b7d;
+}
+
+.stats dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+#log {
+  background: #f4f6f8;
+  border-radius: 6px;
+  min-height: 90px;
+  overflow: auto;
+  padding: 10px;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}

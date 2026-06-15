@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UNO Q Braccio Control</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>UNO Q Braccio</h1>
+        <p id="connection">Connecting...</p>
+      </div>
+      <button id="stopBtn" class="danger">Rest</button>
+    </header>
+
+    <main class="layout">
+      <section class="panel camera-panel">
+        <div class="panel-head">
+          <h2>Camera</h2>
+          <span id="cameraUrl"></span>
+        </div>
+        <img id="camera" alt="UNO Q camera stream">
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Presets</h2>
+        </div>
+        <div id="poses" class="pose-grid"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Manual Control</h2>
+          <button id="sendBtn">Send</button>
+        </div>
+        <div id="sliders" class="sliders"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Robot Stats</h2>
+          <button id="refreshBtn">Refresh</button>
+        </div>
+        <dl id="stats" class="stats"></dl>
+        <pre id="log"></pre>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
