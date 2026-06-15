@@ -39,6 +39,9 @@ Arduino IDE Library Manager or `arduino-cli`.
 
 ## Quick Start
 
+For full setup on Windows, macOS, and Linux, see
+[docs/platform-setup.md](docs/platform-setup.md).
+
 ### 1. Install ROS 2 dependencies
 
 Tested target: ROS 2 Jazzy on Ubuntu 24.04.
@@ -48,6 +51,7 @@ cd ros2_ws
 rosdep install --from-paths src --ignore-src -r -y
 colcon build --symlink-install
 source install/setup.bash
+cd ..
 ```
 
 ### 2. Flash the UNO Q
