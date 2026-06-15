@@ -162,6 +162,13 @@ The Gazebo package models all six Braccio command joints, the gripper-mounted
 camera body, red/blue/yellow pick blocks, and colored drop zones. See
 [ros2_ws/src/unoq_braccio_sim/README.md](ros2_ws/src/unoq_braccio_sim/README.md).
 
+For a simple target-position test inspired by Braccio pick/drop simulators:
+
+```bash
+ros2 run unoq_braccio_driver ik_pose_demo --ros-args \
+  -p x:=0.30 -p y:=0.00 -p z:=0.06 -p gripper:=25
+```
+
 ## Command Protocol
 
 The USB serial firmware and remote App Lab agent both use the same command

@@ -37,8 +37,19 @@
     </visual>
   </xacro:macro>
 
-  <xacro:macro name="paired_arm_link" params="name length plate_height plate_thickness y_offset">
+  <xacro:macro name="mesh_visual" params="filename material x y z rr rp ry">
+    <visual>
+      <origin xyz="${x} ${y} ${z}" rpy="${rr} ${rp} ${ry}"/>
+      <geometry>
+        <mesh filename="package://unoq_braccio_sim/meshes/braccio_stedden/${filename}" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="${material}"/>
+    </visual>
+  </xacro:macro>
+
+  <xacro:macro name="paired_arm_link" params="name length plate_height plate_thickness y_offset mesh mesh_x mesh_y mesh_z">
     <link name="${name}">
+      <xacro:mesh_visual filename="${mesh}" material="braccio_orange" x="${mesh_x}" y="${mesh_y}" z="${mesh_z}" rr="0" rp="0" ry="0"/>
       <visual>
         <origin xyz="${length / 2.0} ${y_offset} 0"/>
         <geometry><box size="${length} ${plate_thickness} ${plate_height}"/></geometry>
@@ -69,6 +80,7 @@
   <link name="world"/>
 
   <link name="base_link">
+    <xacro:mesh_visual filename="braccio_base.stl" material="braccio_orange" x="0" y="0.004" z="0.04" rr="0" rp="0" ry="3.1416"/>
     <visual>
       <origin xyz="0 0 0.018"/>
       <geometry><cylinder radius="0.09" length="0.036"/></geometry>
@@ -105,11 +117,12 @@
     <child link="base_link"/>
   </joint>
 
-  <xacro:paired_arm_link name="shoulder_link" length="0.14" plate_height="0.035" plate_thickness="0.012" y_offset="0.035"/>
-  <xacro:paired_arm_link name="elbow_link" length="0.13" plate_height="0.03" plate_thickness="0.01" y_offset="0.03"/>
-  <xacro:paired_arm_link name="wrist_link" length="0.075" plate_height="0.026" plate_thickness="0.01" y_offset="0.024"/>
+  <xacro:paired_arm_link name="shoulder_link" length="0.14" plate_height="0.035" plate_thickness="0.012" y_offset="0.035" mesh="braccio_shoulder.stl" mesh_x="-0.0045" mesh_y="0.0055" mesh_z="-0.026"/>
+  <xacro:paired_arm_link name="elbow_link" length="0.13" plate_height="0.03" plate_thickness="0.01" y_offset="0.03" mesh="braccio_elbow.stl" mesh_x="-0.0045" mesh_y="0.005" mesh_z="-0.025"/>
+  <xacro:paired_arm_link name="wrist_link" length="0.075" plate_height="0.026" plate_thickness="0.01" y_offset="0.024" mesh="braccio_wrist_pitch.stl" mesh_x="0.003" mesh_y="-0.0004" mesh_z="-0.024"/>
 
   <link name="wrist_rotate_link">
+    <xacro:mesh_visual filename="braccio_wrist_roll.stl" material="braccio_white" x="0.006" y="0" z="0" rr="0" rp="0" ry="0"/>
     <visual>
       <origin xyz="0.016 0 0"/>
       <geometry><cylinder radius="0.026" length="0.032"/></geometry>
@@ -146,6 +159,7 @@
   </link>
 
   <link name="left_finger">
+    <xacro:mesh_visual filename="braccio_left_gripper.stl" material="braccio_white" x="0" y="-0.012" z="0" rr="0" rp="1.5708" ry="0"/>
     <visual>
       <origin xyz="0.04 0.024 0"/>
       <geometry><box size="0.08 0.009 0.012"/></geometry>
@@ -164,6 +178,7 @@
   </link>
 
   <link name="right_finger">
+    <xacro:mesh_visual filename="braccio_right_gripper.stl" material="braccio_white" x="0" y="-0.012" z="0.010" rr="0" rp="1.5708" ry="0"/>
     <visual>
       <origin xyz="0.04 -0.024 0"/>
       <geometry><box size="0.08 0.009 0.012"/></geometry>
