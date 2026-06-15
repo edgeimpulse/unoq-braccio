@@ -1,0 +1,9 @@
+name: UNOQ Braccio Bridge
+description: "Reusable direct-servo Braccio shield bridge for Arduino UNO Q App Lab projects"
+version: "0.1.0"
+sketch:
+  files:
+    - sketch/UnoQBraccioBridge.h
+    - sketch/UnoQBraccioBridge.cpp
+libraries:
+  - Servo

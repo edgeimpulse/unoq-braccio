@@ -1,0 +1,4 @@
+name: UNOQ Braccio Bridge Example
+description: "Minimal App Lab app using the UNOQ Braccio Bridge brick"
+ports: []
+bricks: []

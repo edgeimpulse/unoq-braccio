@@ -30,6 +30,7 @@ app_lab/braccio_smoke_test/       Arduino App Lab hardware smoke test
 app_lab/braccio_remote_agent/     Arduino App Lab network control agent
 app_lab/usb_camera_streamer/      UNO Q attached USB camera MJPEG streamer
 app_lab/braccio_web_agent/        Combined web dashboard control/camera agent
+app_lab/bricks/unoq_braccio_bridge/ Reusable App Lab Braccio bridge brick
 web_app/                          Browser dashboard for remote arm control
 ros2_ws/src/unoq_braccio_bringup/ ROS 2 launch files and runtime config
 ros2_ws/src/unoq_braccio_driver/  Serial driver and demo command nodes
@@ -296,3 +297,16 @@ sliders.
 
 Gripper tuning: this build allows the gripper to close up to `110` degrees.
 Use the dashboard `grip_test` preset first, then `grip_full` only if needed.
+
+## App Lab Brick
+
+The reusable Braccio servo bridge lives in:
+
+```text
+app_lab/bricks/unoq_braccio_bridge
+```
+
+Use it when creating new App Lab apps that need direct Braccio shield control
+from the UNO Q. The current `app_lab/braccio_web_agent` app vendors the same
+brick source into its `sketch/` folder so it can be imported and run as a
+normal App Lab app today.
