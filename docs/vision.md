@@ -4,6 +4,11 @@ The easiest way to add sight to the Braccio is a USB camera connected to the
 ROS 2 host. It gives normal camera frames, works with OpenCV, and can feed both
 Edge Impulse data capture and simple object tracking.
 
+Your current camera placement is close to an eye-in-hand setup: the camera is
+mounted above and between the gripper fingers, looking at the object the arm is
+about to grab. That is useful for final alignment because the center of the
+image can be treated as the gripper's intended pickup point.
+
 ## Recommended Path: USB Camera
 
 Install dependencies in your ROS 2 Ubuntu environment:
@@ -134,4 +139,71 @@ This publishes the same topics as the local USB camera path:
 /braccio/camera/debug
 /braccio/vision_stats
 /edge_impulse/label
+```
+
+## USB Passthrough to WSL
+
+If the camera is physically attached to Windows but you want ROS 2 in WSL to
+use it directly, attach the USB camera with `usbipd-win`.
+
+From elevated PowerShell:
+
+```powershell
+usbipd list
+usbipd bind --busid <CAMERA_BUSID>
+usbipd attach --wsl --busid <CAMERA_BUSID>
+```
+
+In Ubuntu WSL:
+
+```bash
+ls /dev/video*
+v4l2-ctl --list-devices
+source ros2_ws/install/setup.bash
+ros2 launch unoq_braccio_bringup vision_usb.launch.py camera_index:=0 label:=object
+```
+
+Use this route when you want the ROS 2 host to own the camera. Use
+`app_lab/usb_camera_streamer` when the UNO Q owns the camera.
+
+## Gripper-Mounted Camera Alignment
+
+The color tracker reports the target centroid as normalized image coordinates:
+
+```text
+x_norm=-1.0 left, 0.0 centered, 1.0 right
+y_norm=-1.0 top, 0.0 centered, 1.0 bottom
+```
+
+Use `/braccio/vision_stats` to manually calibrate first:
+
+```bash
+ros2 topic echo /braccio/vision_stats
+```
+
+Move an object under the gripper and check whether the target center approaches
+`x_norm=0` and `y_norm=0`.
+
+A cautious alignment helper is included, but it is disabled by default:
+
+```bash
+source ros2_ws/install/setup.bash
+ros2 launch unoq_braccio_bringup vision_assist.launch.py enabled:=false
+```
+
+When the color tracker and hardware bridge are both working, enable it:
+
+```bash
+ros2 launch unoq_braccio_bringup vision_assist.launch.py enabled:=true
+```
+
+The helper makes small base and shoulder nudges to center the detected object.
+Keep one hand near servo power while tuning. If the arm moves opposite to what
+you expect, reverse the relevant gain:
+
+```bash
+ros2 run unoq_braccio_driver visual_servo_assist --ros-args \
+  -p enabled:=true \
+  -p base_gain_deg:=4.0 \
+  -p shoulder_gain_deg:=3.0
 ```

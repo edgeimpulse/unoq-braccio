@@ -224,3 +224,11 @@ ros2 launch unoq_braccio_bringup vision_remote.launch.py \
   stream_url:=http://<UNO_Q_IP_ADDRESS>:8080/stream \
   label:=object
 ```
+
+For a gripper-mounted camera, watch `/braccio/vision_stats` and center the
+object near `x_norm=0` and `y_norm=0`. A cautious visual alignment helper is
+available but disabled by default:
+
+```bash
+ros2 launch unoq_braccio_bringup vision_assist.launch.py enabled:=false
+```
