@@ -3,6 +3,7 @@ import serial
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
+from std_msgs.msg import String
 
 from unoq_braccio_driver.braccio_model import command_line_from_positions
 
@@ -19,6 +20,7 @@ class SerialBridge(Node):
         topic = self.get_parameter("command_topic").value
 
         self.serial = serial.Serial(port, baud_rate, timeout=1.0)
+        self.status_publisher = self.create_publisher(String, "/braccio/firmware_status", 10)
         self.subscription = self.create_subscription(JointState, topic, self.on_command, 10)
         self.get_logger().info(f"Serial bridge connected to {port} at {baud_rate} baud")
 
@@ -32,6 +34,13 @@ class SerialBridge(Node):
         response = self.serial.readline().decode("ascii", errors="replace").strip()
         if response and response != "OK":
             self.get_logger().warning(f"Firmware response: {response}")
+        self.publish_status()
+
+    def publish_status(self) -> None:
+        self.serial.write(b"S\n")
+        response = self.serial.readline().decode("ascii", errors="replace").strip()
+        if response:
+            self.status_publisher.publish(String(data=response))
 
     def destroy_node(self) -> bool:
         if hasattr(self, "serial") and self.serial.is_open:

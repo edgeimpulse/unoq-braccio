@@ -12,6 +12,9 @@ const int JOINTS = 6;
 const int MIN_LIMITS[JOINTS] = {0, 15, 0, 0, 0, 10};
 const int MAX_LIMITS[JOINTS] = {180, 165, 180, 180, 180, 73};
 int target[JOINTS] = {90, 45, 180, 180, 90, 10};
+unsigned long moveCount = 0;
+unsigned long lastMoveMs = 0;
+unsigned long lastCommandMs = 0;
 
 String inputLine;
 
@@ -26,6 +29,7 @@ int clampJoint(int index, int value) {
 }
 
 void moveToTarget() {
+  unsigned long startMs = millis();
   Braccio.ServoMovement(
     20,
     target[0],
@@ -35,6 +39,9 @@ void moveToTarget() {
     target[4],
     target[5]
   );
+  lastMoveMs = millis() - startMs;
+  lastCommandMs = millis();
+  moveCount++;
 }
 
 bool parseMove(String line) {
@@ -64,6 +71,25 @@ bool parseMove(String line) {
   return true;
 }
 
+void printStatus() {
+  Serial.print("STAT uptime_ms=");
+  Serial.print(millis());
+  Serial.print(" move_count=");
+  Serial.print(moveCount);
+  Serial.print(" last_move_ms=");
+  Serial.print(lastMoveMs);
+  Serial.print(" last_command_ms=");
+  Serial.print(lastCommandMs);
+  Serial.print(" target=");
+  for (int i = 0; i < JOINTS; i++) {
+    if (i > 0) {
+      Serial.print(",");
+    }
+    Serial.print(target[i]);
+  }
+  Serial.println();
+}
+
 void setup() {
   Serial.begin(115200);
   Braccio.begin();
@@ -75,7 +101,10 @@ void loop() {
   while (Serial.available() > 0) {
     char c = Serial.read();
     if (c == '\n') {
-      if (parseMove(inputLine)) {
+      inputLine.trim();
+      if (inputLine == "S") {
+        printStatus();
+      } else if (parseMove(inputLine)) {
         moveToTarget();
         Serial.println("OK");
       } else {

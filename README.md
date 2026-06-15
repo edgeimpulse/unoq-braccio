@@ -14,6 +14,7 @@ This repository contains:
 - A Gazebo/ros2_control simulation package for developing without hardware.
 - Edge Impulse integration scaffolding for gesture or classifier-driven arm
   poses.
+- Edge Impulse CSV data capture for commanded servo motion and robot status.
 
 ## Repository Layout
 
@@ -86,6 +87,26 @@ Publish a test pose:
 ros2 run unoq_braccio_driver pose_demo --ros-args -p pose:=ready
 ```
 
+Windows USB debug:
+
+```powershell
+arduino-cli board list
+arduino-cli monitor -p COM4 --fqbn arduino:zephyr:unoq --config baudrate=115200
+```
+
+Replace `COM4` with the port shown by `arduino-cli board list`. The firmware
+uses `115200` baud. Send this line to test the arm command protocol:
+
+```text
+M 90 90 90 90 90 25
+```
+
+Expected response:
+
+```text
+OK
+```
+
 ### 4. Run the hardware bridge over the network
 
 Install and run the App Lab project in `app_lab/braccio_remote_agent` on the
@@ -138,3 +159,33 @@ Braccio operating ranges before moving servos.
 
 See [edge_impulse/README.md](edge_impulse/README.md) for the integration
 pattern.
+
+## Data Capture and Robot Stats
+
+Standard Braccio servos do not provide measured feedback such as current,
+torque, temperature, or actual shaft position. This project captures commanded
+joint angles, deltas, estimated command rates, labels, and firmware/remote-agent
+status.
+
+Start a hardware bridge, then start CSV capture:
+
+```bash
+source ros2_ws/install/setup.bash
+ros2 launch unoq_braccio_bringup data_capture.launch.py \
+  output_file:=edge_impulse/captures/braccio_capture.csv \
+  label:=ready
+```
+
+Query firmware stats directly over serial:
+
+```text
+S
+```
+
+Example response:
+
+```text
+STAT uptime_ms=12345 move_count=3 last_move_ms=640 last_command_ms=12000 target=90,90,90,90,90,25
+```
+
+See [edge_impulse/data_capture.md](edge_impulse/data_capture.md).

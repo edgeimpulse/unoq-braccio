@@ -5,10 +5,26 @@ import time
 
 HOST = "0.0.0.0"
 PORT = 8765
+START_TIME = time.monotonic()
+move_count = 0
+last_move_ms = 0
+last_command_ms = 0
+last_target = [90, 45, 180, 180, 90, 10]
 
 
 def handle_command(command):
+    global move_count, last_move_ms, last_command_ms, last_target
+
     parts = command.strip().split()
+    if len(parts) == 1 and parts[0] == "S":
+        uptime_ms = int((time.monotonic() - START_TIME) * 1000)
+        target = ",".join(str(value) for value in last_target)
+        return (
+            f"STAT uptime_ms={uptime_ms} move_count={move_count} "
+            f"last_move_ms={last_move_ms} last_command_ms={last_command_ms} "
+            f"target={target}"
+        )
+
     if len(parts) != 7 or parts[0] != "M":
         return "ERR"
 
@@ -17,7 +33,12 @@ def handle_command(command):
     except ValueError:
         return "ERR"
 
+    start = time.monotonic()
     result = Bridge.call("move_braccio", *values)
+    last_move_ms = int((time.monotonic() - start) * 1000)
+    last_command_ms = int((time.monotonic() - START_TIME) * 1000)
+    move_count += 1
+    last_target = values
     return "OK" if result is None or result is True else str(result)
 
 

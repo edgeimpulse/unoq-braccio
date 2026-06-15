@@ -19,3 +19,14 @@ Example:
 M 90 90 90 90 90 25
 ```
 
+Status query:
+
+```text
+S
+```
+
+Example response:
+
+```text
+STAT uptime_ms=12345 move_count=3 last_move_ms=640 last_command_ms=12000 target=90,90,90,90,90,25
+```

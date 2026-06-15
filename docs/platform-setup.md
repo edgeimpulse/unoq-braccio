@@ -136,6 +136,73 @@ arduino-cli upload -p COM3 --fqbn arduino:zephyr:unoq .\firmware\unoq_braccio_fi
 Replace `COM3` with the port shown by `arduino-cli board list`.
 Do not use `arduino:avr:uno`; the UNO Q MCU uses the Zephyr board package.
 
+Serial monitor test after upload:
+
+```powershell
+arduino-cli board list
+arduino-cli monitor -p COM4 --fqbn arduino:zephyr:unoq --config baudrate=115200
+```
+
+Replace `COM4` with the UNO Q port. The firmware starts serial at `115200`
+baud, so the default monitor baud rate is not correct for this sketch.
+
+Send:
+
+```text
+M 90 90 90 90 90 25
+```
+
+Expected response:
+
+```text
+OK
+```
+
+If upload fails with:
+
+```text
+adb.exe: device offline
+```
+
+Android tooling may be installed, but the UNO Q is not accepting ADB commands.
+Check with Arduino's packaged ADB:
+
+```powershell
+& "$env:LOCALAPPDATA\Arduino15\packages\arduino\tools\adb\32.0.0\adb.exe" devices -l
+```
+
+If the UNO Q is listed as `offline`:
+
+1. Close Arduino App Lab, Arduino IDE, serial monitors, and Android emulators.
+2. Unplug and reconnect the UNO Q USB-C cable.
+3. Unlock or wake the UNO Q if it shows an authorization prompt.
+4. Restart ADB:
+
+```powershell
+& "$env:LOCALAPPDATA\Arduino15\packages\arduino\tools\adb\32.0.0\adb.exe" kill-server
+& "$env:LOCALAPPDATA\Arduino15\packages\arduino\tools\adb\32.0.0\adb.exe" start-server
+& "$env:LOCALAPPDATA\Arduino15\packages\arduino\tools\adb\32.0.0\adb.exe" devices -l
+```
+
+Retry upload only when the UNO Q status changes from `offline` to `device`.
+
+If Arduino CLI also lists a network port, for example `192.168.1.64`, you can
+try network upload instead of USB ADB upload:
+
+```powershell
+arduino-cli upload -p 192.168.1.64 --fqbn arduino:zephyr:unoq .\firmware\unoq_braccio_firmware
+```
+
+If the command asks for upload credentials, rerun it with the App Lab or UNO Q
+upload password:
+
+```powershell
+arduino-cli upload -p 192.168.1.64 --fqbn arduino:zephyr:unoq .\firmware\unoq_braccio_firmware --upload-field password=<UPLOAD_PASSWORD>
+```
+
+Use `COM4` only for USB upload on Windows. Do not use `/dev/ttyACM0` from
+PowerShell; that path is for Linux/WSL.
+
 ### Hardware bridge from WSL2
 
 For ROS 2 in WSL2 to talk to the Arduino over USB, attach the serial device to
@@ -289,6 +356,12 @@ M 90 90 90 90 90 25
 
 The board should respond with `OK`.
 
+On Windows, open the serial monitor with the firmware baud rate:
+
+```powershell
+arduino-cli monitor -p COM4 --fqbn arduino:zephyr:unoq --config baudrate=115200
+```
+
 Remote agent smoke test from the ROS 2 host:
 
 ```bash
@@ -302,3 +375,43 @@ PY
 ```
 
 The remote agent should respond with `OK`.
+
+## Troubleshooting: `rosdep`, `colcon`, or `apt` Not Found
+
+If you see errors like:
+
+```text
+rosdep: not found
+colcon: not found
+apt: not found
+source: can't open install/setup.bash
+```
+
+you are not in a ROS 2 Ubuntu environment. Do not build the ROS 2 workspace from
+the UNO Q App Lab shell, a minimal container shell, or any shell where `apt` is
+missing.
+
+Use Ubuntu 24.04 directly, or on Windows open the Ubuntu 24.04 WSL terminal.
+Then install ROS 2 Jazzy and the build tools before running `colcon`.
+
+Also check your current directory. If `pwd` already ends in `ros2_ws`, do not
+run `cd ros2_ws` again.
+
+Correct sequence from the repo root:
+
+```bash
+cd /mnt/c/Users/Eoin/git/unoq-braccio
+cd ros2_ws
+rosdep install --from-paths src --ignore-src -r -y
+colcon build --symlink-install
+source install/setup.bash
+```
+
+If `rosdep` or `colcon` are missing on Ubuntu:
+
+```bash
+sudo apt update
+sudo apt install -y python3-rosdep python3-colcon-common-extensions python3-pip
+sudo rosdep init || true
+rosdep update
+```

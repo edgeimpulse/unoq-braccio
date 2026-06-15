@@ -25,6 +25,16 @@ on the UNO Q, listens on TCP port `8765`, and forwards commands to the Braccio
 library through the UNO Q Bridge API. Use this mode when the arm should stay on
 Wi-Fi/Ethernet instead of being tethered to the ROS 2 host.
 
+Both modes support a status query:
+
+```text
+S
+```
+
+The response reports uptime, command count, last move duration, last command
+time, and the last target angles. The stock Braccio servos do not report true
+motor telemetry such as current, torque, temperature, or measured position.
+
 ## Conservative Joint Limits
 
 The firmware and ROS driver clamp commands to:

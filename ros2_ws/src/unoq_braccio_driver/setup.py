@@ -22,6 +22,7 @@ setup(
             "tcp_bridge = unoq_braccio_driver.tcp_bridge:main",
             "pose_demo = unoq_braccio_driver.pose_demo:main",
             "edge_impulse_mapper = unoq_braccio_driver.edge_impulse_mapper:main",
+            "edge_impulse_capture = unoq_braccio_driver.edge_impulse_capture:main",
             "joint_state_simulator = unoq_braccio_driver.joint_state_simulator:main",
         ],
     },

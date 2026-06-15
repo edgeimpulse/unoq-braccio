@@ -3,6 +3,7 @@ import socket
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
+from std_msgs.msg import String
 
 from unoq_braccio_driver.braccio_model import command_line_from_positions
 
@@ -20,6 +21,7 @@ class TcpBridge(Node):
         self.timeout = float(self.get_parameter("timeout").value)
         topic = self.get_parameter("command_topic").value
 
+        self.status_publisher = self.create_publisher(String, "/braccio/firmware_status", 10)
         self.subscription = self.create_subscription(JointState, topic, self.on_command, 10)
         self.get_logger().info(f"TCP bridge targeting {self.host}:{self.port}")
 
@@ -39,6 +41,19 @@ class TcpBridge(Node):
 
         if response != "OK":
             self.get_logger().warning(f"Remote agent response: {response or '<empty>'}")
+        self.publish_status()
+
+    def publish_status(self) -> None:
+        try:
+            with socket.create_connection((self.host, self.port), timeout=self.timeout) as sock:
+                sock.sendall(b"S\n")
+                response = sock.recv(256).decode("ascii", errors="replace").strip()
+        except OSError as error:
+            self.get_logger().warning(f"TCP status query failed: {error}")
+            return
+
+        if response:
+            self.status_publisher.publish(String(data=response))
 
 
 def main() -> None:

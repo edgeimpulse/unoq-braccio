@@ -21,3 +21,6 @@ Publish a simulated label:
 ```bash
 ros2 topic pub --once /edge_impulse/label std_msgs/msg/String "{data: wave}"
 ```
+
+For recording Braccio command and robot-status data as CSV, see
+[data_capture.md](data_capture.md).
