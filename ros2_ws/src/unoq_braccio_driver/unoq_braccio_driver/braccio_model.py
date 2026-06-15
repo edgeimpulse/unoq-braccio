@@ -22,13 +22,15 @@ JOINT_LIMITS = {
     "elbow": JointLimit(0, 180),
     "wrist_vertical": JointLimit(0, 180),
     "wrist_rotation": JointLimit(0, 180),
-    "gripper": JointLimit(10, 73),
+    "gripper": JointLimit(10, 110),
 }
 
 POSES = {
     "rest": [90, 45, 180, 180, 90, 10],
     "ready": [90, 90, 90, 90, 90, 25],
-    "pickup": [90, 70, 45, 80, 90, 73],
+    "grip_test": [90, 90, 90, 90, 90, 95],
+    "grip_full": [90, 90, 90, 90, 90, 110],
+    "pickup": [90, 70, 45, 80, 90, 100],
     "drop": [130, 80, 60, 90, 90, 10],
     "wave": [60, 90, 90, 60, 120, 25],
 }

@@ -102,7 +102,7 @@ The App Lab web agent uses direct `Servo` control on the Braccio shield pins:
 | elbow | 9 | 0-180 |
 | wrist_vertical | 6 | 0-180 |
 | wrist_rotation | 5 | 0-180 |
-| gripper | 3 | 10-73 |
+| gripper | 3 | 10-110 |
 | soft start | 12 | digital high |
 
 The standalone `firmware/unoq_braccio_firmware` still uses the official

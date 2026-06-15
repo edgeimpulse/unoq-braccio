@@ -46,6 +46,10 @@ The firmware and ROS driver clamp commands to:
 | elbow | 0 | 180 | 180 |
 | wrist_vertical | 0 | 180 | 180 |
 | wrist_rotation | 0 | 180 | 90 |
-| gripper | 10 | 73 | 10 |
+| gripper | 10 | 110 | 10 |
 
 Tune these values for your arm after validating mechanical clearance.
+
+The original Braccio examples often use `73` as the gripper close value, but
+this build exposes up to `110` because the mounted gripper did not fully close
+at `73`. Start with `95`, then increase toward `110` only as needed.

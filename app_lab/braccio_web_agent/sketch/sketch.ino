@@ -10,7 +10,7 @@ Servo gripper;
 
 const int JOINTS = 6;
 const int MIN_LIMITS[JOINTS] = {0, 15, 0, 0, 0, 10};
-const int MAX_LIMITS[JOINTS] = {180, 165, 180, 180, 180, 73};
+const int MAX_LIMITS[JOINTS] = {180, 165, 180, 180, 180, 110};
 const int SERVO_PINS[JOINTS] = {11, 10, 9, 6, 5, 3};
 const int SOFT_START_PIN = 12;
 int current[JOINTS] = {90, 45, 180, 180, 90, 10};

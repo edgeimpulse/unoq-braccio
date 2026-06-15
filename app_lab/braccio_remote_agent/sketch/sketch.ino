@@ -11,7 +11,7 @@ Servo gripper;
 
 const int JOINTS = 6;
 const int MIN_LIMITS[JOINTS] = {0, 15, 0, 0, 0, 10};
-const int MAX_LIMITS[JOINTS] = {180, 165, 180, 180, 180, 73};
+const int MAX_LIMITS[JOINTS] = {180, 165, 180, 180, 180, 110};
 
 int clampJoint(int index, int value) {
   if (value < MIN_LIMITS[index]) {

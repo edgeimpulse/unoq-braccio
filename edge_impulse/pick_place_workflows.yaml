@@ -8,10 +8,10 @@ items:
         pose: [90, 70, 70, 85, 90, 25]
         wait: 1.2
       - name: grip
-        pose: [90, 70, 70, 85, 90, 73]
+        pose: [90, 70, 70, 85, 90, 100]
         wait: 0.8
       - name: drop_left
-        pose: [45, 85, 80, 95, 90, 73]
+        pose: [45, 85, 80, 95, 90, 100]
         wait: 1.2
       - name: release
         pose: [45, 85, 80, 95, 90, 10]
@@ -28,10 +28,10 @@ items:
         pose: [90, 70, 70, 85, 90, 25]
         wait: 1.2
       - name: grip
-        pose: [90, 70, 70, 85, 90, 73]
+        pose: [90, 70, 70, 85, 90, 100]
         wait: 0.8
       - name: drop_right
-        pose: [135, 85, 80, 95, 90, 73]
+        pose: [135, 85, 80, 95, 90, 100]
         wait: 1.2
       - name: release
         pose: [135, 85, 80, 95, 90, 10]
@@ -48,10 +48,10 @@ items:
         pose: [90, 70, 70, 85, 90, 25]
         wait: 1.2
       - name: grip
-        pose: [90, 70, 70, 85, 90, 73]
+        pose: [90, 70, 70, 85, 90, 100]
         wait: 0.8
       - name: drop_center
-        pose: [90, 85, 80, 95, 90, 73]
+        pose: [90, 85, 80, 95, 90, 100]
         wait: 1.2
       - name: release
         pose: [90, 85, 80, 95, 90, 10]
@@ -68,10 +68,10 @@ items:
         pose: [90, 70, 70, 85, 90, 25]
         wait: 1.2
       - name: grip
-        pose: [90, 70, 70, 85, 90, 73]
+        pose: [90, 70, 70, 85, 90, 100]
         wait: 0.8
       - name: drop_left
-        pose: [45, 85, 80, 95, 90, 73]
+        pose: [45, 85, 80, 95, 90, 100]
         wait: 1.2
       - name: release
         pose: [45, 85, 80, 95, 90, 10]
@@ -88,10 +88,10 @@ items:
         pose: [90, 70, 70, 85, 90, 25]
         wait: 1.2
       - name: grip
-        pose: [90, 70, 70, 85, 90, 73]
+        pose: [90, 70, 70, 85, 90, 100]
         wait: 0.8
       - name: drop_right
-        pose: [135, 85, 80, 95, 90, 73]
+        pose: [135, 85, 80, 95, 90, 100]
         wait: 1.2
       - name: release
         pose: [135, 85, 80, 95, 90, 10]

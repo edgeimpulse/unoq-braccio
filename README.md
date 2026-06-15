@@ -293,3 +293,6 @@ http://localhost:5000
 
 The page shows the camera stream, robot status, preset poses, and manual joint
 sliders.
+
+Gripper tuning: this build allows the gripper to close up to `110` degrees.
+Use the dashboard `grip_test` preset first, then `grip_full` only if needed.
