@@ -50,25 +50,6 @@
   <xacro:macro name="paired_arm_link" params="name length plate_height plate_thickness y_offset mesh mesh_x mesh_y mesh_z">
     <link name="${name}">
       <xacro:mesh_visual filename="${mesh}" material="braccio_orange" x="${mesh_x}" y="${mesh_y}" z="${mesh_z}" rr="0" rp="0" ry="0"/>
-      <visual>
-        <origin xyz="${length / 2.0} ${y_offset} 0"/>
-        <geometry><box size="${length} ${plate_thickness} ${plate_height}"/></geometry>
-        <material name="braccio_orange"/>
-      </visual>
-      <visual>
-        <origin xyz="${length / 2.0} ${-y_offset} 0"/>
-        <geometry><box size="${length} ${plate_thickness} ${plate_height}"/></geometry>
-        <material name="braccio_orange"/>
-      </visual>
-      <visual>
-        <origin xyz="${length / 2.0} 0 ${plate_height * 0.42}"/>
-        <geometry><box size="${length * 0.82} ${y_offset * 1.15} ${plate_thickness}"/></geometry>
-        <material name="braccio_orange_dark"/>
-      </visual>
-      <xacro:joint_hub_visual x="0" y="${y_offset + 0.011}" z="0" radius="0.026" material="braccio_black"/>
-      <xacro:joint_hub_visual x="0" y="${-y_offset - 0.011}" z="0" radius="0.026" material="braccio_black"/>
-      <xacro:joint_hub_visual x="${length}" y="${y_offset + 0.011}" z="0" radius="0.022" material="braccio_metal"/>
-      <xacro:joint_hub_visual x="${length}" y="${-y_offset - 0.011}" z="0" radius="0.022" material="braccio_metal"/>
       <collision>
         <origin xyz="${length / 2.0} 0 0"/>
         <geometry><box size="${length} ${y_offset * 2.0 + plate_thickness} ${plate_height}"/></geometry>
@@ -81,27 +62,6 @@
 
   <link name="base_link">
     <xacro:mesh_visual filename="braccio_base.stl" material="braccio_orange" x="0" y="0.004" z="0.04" rr="0" rp="0" ry="3.1416"/>
-    <visual>
-      <origin xyz="0 0 0.018"/>
-      <geometry><cylinder radius="0.09" length="0.036"/></geometry>
-      <material name="braccio_orange"/>
-    </visual>
-    <visual>
-      <origin xyz="0 0 0.045"/>
-      <geometry><cylinder radius="0.055" length="0.04"/></geometry>
-      <material name="braccio_black"/>
-    </visual>
-    <visual>
-      <origin xyz="0 0.045 0.085"/>
-      <geometry><box size="0.052 0.026 0.09"/></geometry>
-      <material name="braccio_orange"/>
-    </visual>
-    <visual>
-      <origin xyz="0 -0.045 0.085"/>
-      <geometry><box size="0.052 0.026 0.09"/></geometry>
-      <material name="braccio_orange"/>
-    </visual>
-    <xacro:servo_box_visual x="0" y="0" z="0.075" sx="0.048" sy="0.052" sz="0.048"/>
     <collision>
       <origin xyz="0 0 0.045"/>
       <geometry><cylinder radius="0.09" length="0.09"/></geometry>
@@ -123,16 +83,6 @@
 
   <link name="wrist_rotate_link">
     <xacro:mesh_visual filename="braccio_wrist_roll.stl" material="braccio_white" x="0.006" y="0" z="0" rr="0" rp="0" ry="0"/>
-    <visual>
-      <origin xyz="0.016 0 0"/>
-      <geometry><cylinder radius="0.026" length="0.032"/></geometry>
-      <material name="braccio_black"/>
-    </visual>
-    <visual>
-      <origin xyz="0.035 0 0"/>
-      <geometry><box size="0.034 0.046 0.028"/></geometry>
-      <material name="braccio_orange"/>
-    </visual>
     <collision>
       <origin xyz="0.028 0 0"/>
       <geometry><box size="0.05 0.05 0.035"/></geometry>
@@ -160,16 +110,6 @@
 
   <link name="left_finger">
     <xacro:mesh_visual filename="braccio_left_gripper.stl" material="braccio_white" x="0" y="-0.012" z="0" rr="0" rp="1.5708" ry="0"/>
-    <visual>
-      <origin xyz="0.04 0.024 0"/>
-      <geometry><box size="0.08 0.009 0.012"/></geometry>
-      <material name="braccio_white"/>
-    </visual>
-    <visual>
-      <origin xyz="0.077 0.03 -0.014" rpy="0 0 0.35"/>
-      <geometry><box size="0.035 0.008 0.012"/></geometry>
-      <material name="braccio_white"/>
-    </visual>
     <collision>
       <origin xyz="0.04 0.024 0"/>
       <geometry><box size="0.08 0.012 0.014"/></geometry>
@@ -179,16 +119,6 @@
 
   <link name="right_finger">
     <xacro:mesh_visual filename="braccio_right_gripper.stl" material="braccio_white" x="0" y="-0.012" z="0.010" rr="0" rp="1.5708" ry="0"/>
-    <visual>
-      <origin xyz="0.04 -0.024 0"/>
-      <geometry><box size="0.08 0.009 0.012"/></geometry>
-      <material name="braccio_white"/>
-    </visual>
-    <visual>
-      <origin xyz="0.077 -0.03 -0.014" rpy="0 0 -0.35"/>
-      <geometry><box size="0.035 0.008 0.012"/></geometry>
-      <material name="braccio_white"/>
-    </visual>
     <collision>
       <origin xyz="0.04 -0.024 0"/>
       <geometry><box size="0.08 0.012 0.014"/></geometry>
