@@ -1,4 +1,4 @@
-# UNOQ Braccio
+# Arduino UNOQ Braccio
 
 Control a TinkerKit Braccio arm with an Arduino UNO Q, ROS 2, Edge Impulse,
 and Gazebo.
