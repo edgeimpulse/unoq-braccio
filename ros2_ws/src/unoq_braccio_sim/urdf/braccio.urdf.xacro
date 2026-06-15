@@ -2,11 +2,13 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="unoq_braccio">
   <xacro:arg name="controllers_file" default=""/>
 
-  <material name="braccio_blue"><color rgba="0.05 0.18 0.8 1"/></material>
-  <material name="braccio_orange"><color rgba="0.94 0.6 0.05 1"/></material>
-  <material name="braccio_white"><color rgba="0.92 0.92 0.92 1"/></material>
-  <material name="braccio_dark"><color rgba="0.12 0.14 0.18 1"/></material>
-  <material name="camera_black"><color rgba="0.02 0.02 0.025 1"/></material>
+  <material name="braccio_orange"><color rgba="1.0 0.34 0.02 1"/></material>
+  <material name="braccio_orange_dark"><color rgba="0.76 0.18 0.02 1"/></material>
+  <material name="braccio_white"><color rgba="0.94 0.94 0.9 1"/></material>
+  <material name="braccio_metal"><color rgba="0.72 0.72 0.68 1"/></material>
+  <material name="braccio_black"><color rgba="0.03 0.035 0.045 1"/></material>
+  <material name="camera_black"><color rgba="0.01 0.01 0.015 1"/></material>
+  <material name="lens_blue"><color rgba="0.08 0.28 0.55 1"/></material>
 
   <xacro:macro name="box_inertial" params="mass x y z">
     <inertial>
@@ -19,21 +21,82 @@
     </inertial>
   </xacro:macro>
 
+  <xacro:macro name="joint_hub_visual" params="x y z radius material">
+    <visual>
+      <origin xyz="${x} ${y} ${z}" rpy="1.5708 0 0"/>
+      <geometry><cylinder radius="${radius}" length="0.018"/></geometry>
+      <material name="${material}"/>
+    </visual>
+  </xacro:macro>
+
+  <xacro:macro name="servo_box_visual" params="x y z sx sy sz">
+    <visual>
+      <origin xyz="${x} ${y} ${z}"/>
+      <geometry><box size="${sx} ${sy} ${sz}"/></geometry>
+      <material name="braccio_black"/>
+    </visual>
+  </xacro:macro>
+
+  <xacro:macro name="paired_arm_link" params="name length plate_height plate_thickness y_offset">
+    <link name="${name}">
+      <visual>
+        <origin xyz="${length / 2.0} ${y_offset} 0"/>
+        <geometry><box size="${length} ${plate_thickness} ${plate_height}"/></geometry>
+        <material name="braccio_orange"/>
+      </visual>
+      <visual>
+        <origin xyz="${length / 2.0} ${-y_offset} 0"/>
+        <geometry><box size="${length} ${plate_thickness} ${plate_height}"/></geometry>
+        <material name="braccio_orange"/>
+      </visual>
+      <visual>
+        <origin xyz="${length / 2.0} 0 ${plate_height * 0.42}"/>
+        <geometry><box size="${length * 0.82} ${y_offset * 1.15} ${plate_thickness}"/></geometry>
+        <material name="braccio_orange_dark"/>
+      </visual>
+      <xacro:joint_hub_visual x="0" y="${y_offset + 0.011}" z="0" radius="0.026" material="braccio_black"/>
+      <xacro:joint_hub_visual x="0" y="${-y_offset - 0.011}" z="0" radius="0.026" material="braccio_black"/>
+      <xacro:joint_hub_visual x="${length}" y="${y_offset + 0.011}" z="0" radius="0.022" material="braccio_metal"/>
+      <xacro:joint_hub_visual x="${length}" y="${-y_offset - 0.011}" z="0" radius="0.022" material="braccio_metal"/>
+      <collision>
+        <origin xyz="${length / 2.0} 0 0"/>
+        <geometry><box size="${length} ${y_offset * 2.0 + plate_thickness} ${plate_height}"/></geometry>
+      </collision>
+      <xacro:box_inertial mass="0.18" x="${length}" y="${y_offset * 2.0 + plate_thickness}" z="${plate_height}"/>
+    </link>
+  </xacro:macro>
+
   <link name="world"/>
 
   <link name="base_link">
     <visual>
-      <origin xyz="0 0 0.02"/>
-      <geometry><cylinder radius="0.07" length="0.04"/></geometry>
-      <material name="braccio_blue"/>
+      <origin xyz="0 0 0.018"/>
+      <geometry><cylinder radius="0.09" length="0.036"/></geometry>
+      <material name="braccio_orange"/>
     </visual>
+    <visual>
+      <origin xyz="0 0 0.045"/>
+      <geometry><cylinder radius="0.055" length="0.04"/></geometry>
+      <material name="braccio_black"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0.045 0.085"/>
+      <geometry><box size="0.052 0.026 0.09"/></geometry>
+      <material name="braccio_orange"/>
+    </visual>
+    <visual>
+      <origin xyz="0 -0.045 0.085"/>
+      <geometry><box size="0.052 0.026 0.09"/></geometry>
+      <material name="braccio_orange"/>
+    </visual>
+    <xacro:servo_box_visual x="0" y="0" z="0.075" sx="0.048" sy="0.052" sz="0.048"/>
     <collision>
-      <origin xyz="0 0 0.02"/>
-      <geometry><cylinder radius="0.07" length="0.04"/></geometry>
+      <origin xyz="0 0 0.045"/>
+      <geometry><cylinder radius="0.09" length="0.09"/></geometry>
     </collision>
     <inertial>
-      <mass value="0.5"/>
-      <inertia ixx="0.0012" iyy="0.0012" izz="0.0012" ixy="0" ixz="0" iyz="0"/>
+      <mass value="0.7"/>
+      <inertia ixx="0.002" iyy="0.002" izz="0.002" ixy="0" ixz="0" iyz="0"/>
     </inertial>
   </link>
 
@@ -42,69 +105,103 @@
     <child link="base_link"/>
   </joint>
 
-  <xacro:macro name="arm_box" params="name length width height material">
-    <link name="${name}">
-      <visual>
-        <origin xyz="${length / 2.0} 0 0"/>
-        <geometry><box size="${length} ${width} ${height}"/></geometry>
-        <material name="${material}"/>
-      </visual>
-      <collision>
-        <origin xyz="${length / 2.0} 0 0"/>
-        <geometry><box size="${length} ${width} ${height}"/></geometry>
-      </collision>
-      <xacro:box_inertial mass="0.16" x="${length}" y="${width}" z="${height}"/>
-    </link>
-  </xacro:macro>
+  <xacro:paired_arm_link name="shoulder_link" length="0.14" plate_height="0.035" plate_thickness="0.012" y_offset="0.035"/>
+  <xacro:paired_arm_link name="elbow_link" length="0.13" plate_height="0.03" plate_thickness="0.01" y_offset="0.03"/>
+  <xacro:paired_arm_link name="wrist_link" length="0.075" plate_height="0.026" plate_thickness="0.01" y_offset="0.024"/>
 
-  <xacro:arm_box name="shoulder_link" length="0.125" width="0.036" height="0.036" material="braccio_orange"/>
-  <xacro:arm_box name="elbow_link" length="0.125" width="0.032" height="0.032" material="braccio_blue"/>
-  <xacro:arm_box name="wrist_link" length="0.075" width="0.028" height="0.028" material="braccio_white"/>
-  <xacro:arm_box name="wrist_rotate_link" length="0.035" width="0.03" height="0.03" material="braccio_dark"/>
-  <xacro:arm_box name="gripper_carriage" length="0.04" width="0.04" height="0.024" material="braccio_dark"/>
+  <link name="wrist_rotate_link">
+    <visual>
+      <origin xyz="0.016 0 0"/>
+      <geometry><cylinder radius="0.026" length="0.032"/></geometry>
+      <material name="braccio_black"/>
+    </visual>
+    <visual>
+      <origin xyz="0.035 0 0"/>
+      <geometry><box size="0.034 0.046 0.028"/></geometry>
+      <material name="braccio_orange"/>
+    </visual>
+    <collision>
+      <origin xyz="0.028 0 0"/>
+      <geometry><box size="0.05 0.05 0.035"/></geometry>
+    </collision>
+    <xacro:box_inertial mass="0.12" x="0.05" y="0.05" z="0.035"/>
+  </link>
+
+  <link name="gripper_carriage">
+    <visual>
+      <origin xyz="0.02 0 0"/>
+      <geometry><box size="0.04 0.05 0.025"/></geometry>
+      <material name="braccio_white"/>
+    </visual>
+    <visual>
+      <origin xyz="0.01 0 0.022"/>
+      <geometry><cylinder radius="0.019" length="0.018"/></geometry>
+      <material name="braccio_metal"/>
+    </visual>
+    <collision>
+      <origin xyz="0.02 0 0"/>
+      <geometry><box size="0.04 0.05 0.025"/></geometry>
+    </collision>
+    <xacro:box_inertial mass="0.1" x="0.04" y="0.05" z="0.025"/>
+  </link>
 
   <link name="left_finger">
     <visual>
-      <origin xyz="0.035 0.018 0"/>
-      <geometry><box size="0.07 0.012 0.014"/></geometry>
+      <origin xyz="0.04 0.024 0"/>
+      <geometry><box size="0.08 0.009 0.012"/></geometry>
+      <material name="braccio_white"/>
+    </visual>
+    <visual>
+      <origin xyz="0.077 0.03 -0.014" rpy="0 0 0.35"/>
+      <geometry><box size="0.035 0.008 0.012"/></geometry>
       <material name="braccio_white"/>
     </visual>
     <collision>
-      <origin xyz="0.035 0.018 0"/>
-      <geometry><box size="0.07 0.012 0.014"/></geometry>
+      <origin xyz="0.04 0.024 0"/>
+      <geometry><box size="0.08 0.012 0.014"/></geometry>
     </collision>
-    <xacro:box_inertial mass="0.03" x="0.07" y="0.012" z="0.014"/>
+    <xacro:box_inertial mass="0.03" x="0.08" y="0.012" z="0.014"/>
   </link>
 
   <link name="right_finger">
     <visual>
-      <origin xyz="0.035 -0.018 0"/>
-      <geometry><box size="0.07 0.012 0.014"/></geometry>
+      <origin xyz="0.04 -0.024 0"/>
+      <geometry><box size="0.08 0.009 0.012"/></geometry>
+      <material name="braccio_white"/>
+    </visual>
+    <visual>
+      <origin xyz="0.077 -0.03 -0.014" rpy="0 0 -0.35"/>
+      <geometry><box size="0.035 0.008 0.012"/></geometry>
       <material name="braccio_white"/>
     </visual>
     <collision>
-      <origin xyz="0.035 -0.018 0"/>
-      <geometry><box size="0.07 0.012 0.014"/></geometry>
+      <origin xyz="0.04 -0.024 0"/>
+      <geometry><box size="0.08 0.012 0.014"/></geometry>
     </collision>
-    <xacro:box_inertial mass="0.03" x="0.07" y="0.012" z="0.014"/>
+    <xacro:box_inertial mass="0.03" x="0.08" y="0.012" z="0.014"/>
   </link>
 
   <link name="camera_link">
     <visual>
       <origin xyz="0 0 0"/>
-      <geometry><box size="0.03 0.022 0.018"/></geometry>
+      <geometry><box size="0.034 0.026 0.022"/></geometry>
       <material name="camera_black"/>
     </visual>
+    <visual>
+      <origin xyz="0.018 0 0" rpy="0 1.5708 0"/>
+      <geometry><cylinder radius="0.008" length="0.006"/></geometry>
+      <material name="lens_blue"/>
+    </visual>
     <collision>
-      <geometry><box size="0.03 0.022 0.018"/></geometry>
+      <geometry><box size="0.034 0.026 0.022"/></geometry>
     </collision>
-    <xacro:box_inertial mass="0.04" x="0.03" y="0.022" z="0.018"/>
+    <xacro:box_inertial mass="0.04" x="0.034" y="0.026" z="0.022"/>
   </link>
 
   <joint name="base" type="revolute">
     <parent link="base_link"/>
     <child link="shoulder_link"/>
-    <origin xyz="0 0 0.055"/>
+    <origin xyz="0 0 0.11"/>
     <axis xyz="0 0 1"/>
     <limit lower="-1.5708" upper="1.5708" effort="2" velocity="1"/>
   </joint>
@@ -112,7 +209,7 @@
   <joint name="shoulder" type="revolute">
     <parent link="shoulder_link"/>
     <child link="elbow_link"/>
-    <origin xyz="0.125 0 0"/>
+    <origin xyz="0.14 0 0"/>
     <axis xyz="0 1 0"/>
     <limit lower="-1.309" upper="1.309" effort="2" velocity="1"/>
   </joint>
@@ -120,7 +217,7 @@
   <joint name="elbow" type="revolute">
     <parent link="elbow_link"/>
     <child link="wrist_link"/>
-    <origin xyz="0.125 0 0"/>
+    <origin xyz="0.13 0 0"/>
     <axis xyz="0 1 0"/>
     <limit lower="-1.5708" upper="1.5708" effort="2" velocity="1"/>
   </joint>
@@ -136,7 +233,7 @@
   <joint name="wrist_rotation" type="revolute">
     <parent link="wrist_rotate_link"/>
     <child link="gripper_carriage"/>
-    <origin xyz="0.035 0 0"/>
+    <origin xyz="0.045 0 0"/>
     <axis xyz="1 0 0"/>
     <limit lower="-1.5708" upper="1.5708" effort="1" velocity="1"/>
   </joint>
@@ -144,7 +241,7 @@
   <joint name="gripper" type="prismatic">
     <parent link="gripper_carriage"/>
     <child link="left_finger"/>
-    <origin xyz="0.035 0 0"/>
+    <origin xyz="0.04 0 0"/>
     <axis xyz="0 1 0"/>
     <limit lower="0" upper="0.035" effort="1" velocity="0.05"/>
   </joint>
@@ -152,13 +249,13 @@
   <joint name="right_finger_fixed" type="fixed">
     <parent link="gripper_carriage"/>
     <child link="right_finger"/>
-    <origin xyz="0.035 0 0"/>
+    <origin xyz="0.04 0 0"/>
   </joint>
 
   <joint name="camera_mount" type="fixed">
     <parent link="gripper_carriage"/>
     <child link="camera_link"/>
-    <origin xyz="0.045 0 0.035" rpy="0 0 0"/>
+    <origin xyz="0.052 0 0.04" rpy="0 0 0"/>
   </joint>
 
   <ros2_control name="GazeboSystem" type="system">
