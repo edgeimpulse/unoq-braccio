@@ -6,17 +6,20 @@ and Gazebo.
 <p align="center">
   <img src="docs/IMG-20260615-WA0006.jpg" width="800">
 </p>
+
 # Simulator
+<p align="center">
+<img width="800" alt="image" alt="Screenshot 2026-06-16 000253" src="https://github.com/user-attachments/assets/7736b383-4374-40f8-bcf9-347998eaff60" />
+</p>
+
+# Actual Braccio
 <p align="center">
 <img width="800" alt="image"  alt="IMG_20260615_142606610_HDR~2" src="https://github.com/user-attachments/assets/db8d983e-142a-4fbe-8bbe-c46fc83fc3e3" />
 </p>
-# Actual Braccio
+
+# WebUI
 <p align="center">
 <img width="800" alt="image" src="https://github.com/user-attachments/assets/106f27c6-1770-4013-a920-a8994daa6cda" />
-</p>
-#WebUI
-<p align="center">
-<img width="800" alt="image" alt="Screenshot 2026-06-16 000253" src="https://github.com/user-attachments/assets/7736b383-4374-40f8-bcf9-347998eaff60" />
 </p>
 
 This repository contains:
