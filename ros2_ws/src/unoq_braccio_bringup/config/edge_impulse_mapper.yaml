@@ -1,0 +1,4 @@
+unoq_braccio_edge_impulse_mapper:
+  ros__parameters:
+    mapping_file: edge_impulse/label_to_pose.yaml
+    label_topic: /edge_impulse/label
