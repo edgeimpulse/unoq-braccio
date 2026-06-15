@@ -1,9 +1,16 @@
 from arduino.app_utils import App, Bridge
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-import cv2
 import socket
 import threading
 import time
+
+try:
+    import cv2
+except Exception as exc:
+    cv2 = None
+    CV2_IMPORT_ERROR = exc
+else:
+    CV2_IMPORT_ERROR = None
 
 
 CONTROL_PORT = 8765
@@ -66,6 +73,10 @@ def arm_server():
 
 def camera_loop():
     global latest_jpeg
+    if cv2 is None:
+        print(f"OpenCV unavailable; camera stream disabled: {CV2_IMPORT_ERROR}")
+        return
+
     capture = cv2.VideoCapture(CAMERA_INDEX)
     capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
@@ -93,7 +104,17 @@ class StreamHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "text/plain")
             self.end_headers()
-            self.wfile.write(b"UNO Q Braccio web agent. Use /stream\n")
+            if cv2 is None:
+                self.wfile.write(b"UNO Q Braccio web agent. Control online; camera disabled because OpenCV is unavailable.\n")
+            else:
+                self.wfile.write(b"UNO Q Braccio web agent. Use /stream\n")
+            return
+
+        if cv2 is None:
+            self.send_response(503)
+            self.send_header("Content-Type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"Camera disabled because OpenCV is unavailable.\n")
             return
 
         self.send_response(200)
@@ -130,7 +151,10 @@ def camera_server():
 
 def loop():
     threading.Thread(target=arm_server, daemon=True).start()
-    threading.Thread(target=camera_loop, daemon=True).start()
+    if cv2 is None:
+        print(f"OpenCV unavailable; starting control without camera: {CV2_IMPORT_ERROR}")
+    else:
+        threading.Thread(target=camera_loop, daemon=True).start()
     threading.Thread(target=camera_server, daemon=True).start()
     while True:
         time.sleep(1)
