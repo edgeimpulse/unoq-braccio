@@ -24,6 +24,7 @@ This repository contains:
 firmware/unoq_braccio_firmware/   USB serial firmware for UNO Q + Braccio
 app_lab/braccio_smoke_test/       Arduino App Lab hardware smoke test
 app_lab/braccio_remote_agent/     Arduino App Lab network control agent
+app_lab/usb_camera_streamer/      UNO Q attached USB camera MJPEG streamer
 ros2_ws/src/unoq_braccio_bringup/ ROS 2 launch files and runtime config
 ros2_ws/src/unoq_braccio_driver/  Serial driver and demo command nodes
 ros2_ws/src/unoq_braccio_sim/     URDF, Gazebo world, ros2_control config
@@ -213,3 +214,13 @@ ros2 launch unoq_braccio_bringup vision_usb.launch.py camera_index:=0 label:=obj
 
 This publishes camera frames, debug frames, object centroid stats, and simple
 labels that can feed the Edge Impulse mapper. See [docs/vision.md](docs/vision.md).
+
+If the USB camera is plugged into the UNO Q instead, run
+`app_lab/usb_camera_streamer` on the UNO Q and use:
+
+```bash
+source ros2_ws/install/setup.bash
+ros2 launch unoq_braccio_bringup vision_remote.launch.py \
+  stream_url:=http://<UNO_Q_IP_ADDRESS>:8080/stream \
+  label:=object
+```

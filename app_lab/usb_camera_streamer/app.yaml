@@ -1,0 +1,7 @@
+name: UNOQ USB Camera Streamer
+description: "Stream a UNO Q attached USB camera over MJPEG for remote ROS 2 vision"
+icon:
+version: "0.1.0"
+ports:
+  - 8080
+bricks: []

@@ -104,3 +104,34 @@ http://<ESP32_CAM_IP>:81/stream
 ```
 
 Add this after USB camera control is working.
+
+## Remote USB Camera on the UNO Q
+
+Use this when the USB camera is plugged into the UNO Q, but ROS 2 is running on
+your PC.
+
+1. Plug the USB camera into the UNO Q.
+2. In Arduino App Lab, run `app_lab/usb_camera_streamer` on the UNO Q.
+3. Open this URL in a browser:
+
+```text
+http://<UNO_Q_IP_ADDRESS>:8080/stream
+```
+
+4. In ROS 2, start the remote vision pipeline:
+
+```bash
+source ros2_ws/install/setup.bash
+ros2 launch unoq_braccio_bringup vision_remote.launch.py \
+  stream_url:=http://<UNO_Q_IP_ADDRESS>:8080/stream \
+  label:=object
+```
+
+This publishes the same topics as the local USB camera path:
+
+```text
+/braccio/camera/image_raw
+/braccio/camera/debug
+/braccio/vision_stats
+/edge_impulse/label
+```
