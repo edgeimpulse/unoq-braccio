@@ -9,30 +9,20 @@
   <body>
     <header class="topbar">
       <div>
-        <h1>UNO Q Braccio</h1>
-        <p id="connection">Connecting...</p>
+        <h1><span class="mark">▦</span> UNOQ Braccio Dashboard</h1>
+        <p>Remote control, camera, and robot status</p>
       </div>
+      <p id="connection" class="connection-chip">Connecting...</p>
       <button id="stopBtn" class="danger">Rest</button>
     </header>
 
     <main class="layout">
-      <section class="panel camera-panel">
-        <div class="panel-head">
-          <h2>Camera</h2>
-          <span id="cameraUrl"></span>
-        </div>
-        <img id="camera" alt="UNO Q camera stream">
-        <p id="cameraStatus" class="hint"></p>
-      </section>
-
-      <section class="panel">
+      <section class="panel controls-panel">
         <div class="panel-head">
           <h2>Presets</h2>
         </div>
         <div id="poses" class="pose-grid"></div>
-      </section>
 
-      <section class="panel">
         <div class="panel-head">
           <h2>Manual Control</h2>
           <div class="manual-actions">
@@ -43,7 +33,16 @@
         <div id="sliders" class="sliders"></div>
       </section>
 
-      <section class="panel">
+      <section class="panel camera-panel">
+        <div class="panel-head">
+          <h2>Camera Stream <span>(Gripper View)</span></h2>
+          <span id="cameraUrl"></span>
+        </div>
+        <img id="camera" alt="UNO Q camera stream">
+        <p id="cameraStatus" class="hint"></p>
+      </section>
+
+      <section class="panel status-panel">
         <div class="panel-head">
           <h2>Robot Stats</h2>
           <button id="refreshBtn">Refresh</button>

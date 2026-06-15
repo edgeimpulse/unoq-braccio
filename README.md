@@ -39,6 +39,8 @@ scripts/                          Setup and helper scripts
 docs/                             Hardware and workflow documentation
 ```
 
+Architecture details: [docs/architecture.md](docs/architecture.md).
+
 ## Hardware
 
 - Arduino UNO Q
