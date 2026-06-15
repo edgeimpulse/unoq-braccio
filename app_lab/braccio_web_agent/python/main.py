@@ -1,5 +1,6 @@
 from arduino.app_utils import App, Bridge
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 import socket
 import threading
 import time
@@ -15,7 +16,6 @@ else:
 
 CONTROL_PORT = 8765
 CAMERA_PORT = 8080
-CAMERA_INDEX = 0
 START_TIME = time.monotonic()
 
 frame_lock = threading.Lock()
@@ -71,13 +71,39 @@ def arm_server():
                 print(f"{address[0]}: {data.strip()} -> {response}")
 
 
+def find_camera():
+    for device in sorted(Path("/dev").glob("video*")):
+        capture = cv2.VideoCapture(str(device))
+        if capture.isOpened():
+            ok, _ = capture.read()
+            if ok:
+                print(f"Using camera {device}")
+                return capture
+        capture.release()
+
+    for index in range(4):
+        capture = cv2.VideoCapture(index)
+        if capture.isOpened():
+            ok, _ = capture.read()
+            if ok:
+                print(f"Using camera index {index}")
+                return capture
+        capture.release()
+
+    return None
+
+
 def camera_loop():
     global latest_jpeg
     if cv2 is None:
         print(f"OpenCV unavailable; camera stream disabled: {CV2_IMPORT_ERROR}")
         return
 
-    capture = cv2.VideoCapture(CAMERA_INDEX)
+    capture = find_camera()
+    if capture is None:
+        print("No usable camera found; camera stream will stay unavailable")
+        return
+
     capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     capture.set(cv2.CAP_PROP_FPS, 15)
@@ -150,12 +176,12 @@ def camera_server():
 
 
 def loop():
-    threading.Thread(target=arm_server, daemon=True).start()
+    threading.Thread(target=arm_server).start()
     if cv2 is None:
         print(f"OpenCV unavailable; starting control without camera: {CV2_IMPORT_ERROR}")
     else:
-        threading.Thread(target=camera_loop, daemon=True).start()
-    threading.Thread(target=camera_server, daemon=True).start()
+        threading.Thread(target=camera_loop).start()
+    threading.Thread(target=camera_server).start()
     while True:
         time.sleep(1)
 
