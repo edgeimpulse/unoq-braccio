@@ -3,6 +3,10 @@
 Control a TinkerKit Braccio arm with an Arduino UNO Q, ROS 2, Edge Impulse,
 and Gazebo.
 
+<p align="center">
+  <img src="docs/IMG-20260615-WA0006.jpg" width="800">
+</p>
+
 This repository contains:
 
 - Arduino firmware using the official
