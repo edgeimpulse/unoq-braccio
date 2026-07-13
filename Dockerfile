@@ -2,20 +2,23 @@ FROM ros:jazzy-ros-base
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Core dev tools + Edge Impulse Linux runtime dependencies.
-RUN apt-get update && apt-get install -y \
+# Core dev tools + audio dev headers. Keep this minimal: OpenCV/numpy come from
+# pip below as the headless wheel. The apt `python3-opencv` package drags in
+# ~900 MB of Qt/Mesa/X11 GUI dependencies that don't fit on the UNO Q's small
+# eMMC and aren't needed on a headless device.
+RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-colcon-common-extensions \
     python3-rosdep \
     python3-pip \
-    python3-opencv \
-    python3-numpy \
     portaudio19-dev \
     git \
- && rm -rf /var/lib/apt/lists/*
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Edge Impulse Linux Python SDK. The SDK imports pyaudio even for image models,
-# so install both. The arm64 wheels run natively on the UNO Q (Cortex-A53).
-RUN pip install --no-cache-dir --break-system-packages edge_impulse_linux pyaudio
+# Edge Impulse Linux Python SDK + headless OpenCV/numpy (no GUI deps). The SDK
+# imports pyaudio even for image models, so install it too. The arm64 wheels
+# run natively on the UNO Q (Cortex-A53).
+RUN pip install --no-cache-dir --break-system-packages \
+    edge_impulse_linux pyaudio opencv-python-headless numpy
 
 # The base image already ran `rosdep init`.
 RUN rosdep update
@@ -28,10 +31,10 @@ RUN mkdir -p src && cd src && \
     git clone https://github.com/edgeimpulse/edgeimpulse-ros.git
 COPY ros2_ws/src/ /braccio_ws/src/
 
-# Resolve ROS deps (vision_msgs, diagnostic_msgs, ...); skip the pip-only keys
-# that are already installed above.
+# Resolve ROS deps (vision_msgs, diagnostic_msgs, ...). Skip the pip-provided
+# keys so rosdep doesn't pull the heavy GUI `python3-opencv` chain back in.
 RUN rosdep install --from-paths src --ignore-src -r -y \
-    --skip-keys "edge_impulse_linux pyaudio"
+    --skip-keys "edge_impulse_linux pyaudio python3-opencv python3-numpy"
 
 # These packages are pure ament_python, so the build is light enough for the
 # 4 GB UNO Q. Keep it sequential to stay well within RAM on smaller variants.
