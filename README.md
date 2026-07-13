@@ -293,6 +293,25 @@ https://studio.edgeimpulse.com/studio/1029890
 Project labels used for pick/place examples: `Red Block`, `Blue Block`, and
 `Yellow Block`.
 
+## Run on the UNO Q Itself (Docker)
+
+You can run the whole Edge Impulse pick-and-place pipeline in a Docker container
+**on the UNO Q**, with no external host. The repo root ships a `Dockerfile` and
+`docker-compose.yml` for this; the UNO Q's own App Lab agents provide the camera
+(`127.0.0.1:8080`) and arm control (`127.0.0.1:8765`).
+
+```bash
+# 1. Run the app_lab/braccio_web_agent App Lab app first (serves :8080 + :8765).
+# 2. Put your aarch64 .eim model at ./models/model.eim (see models/README.md).
+cd ~/unoq-braccio
+docker compose up -d --build
+docker compose logs -f ros2
+```
+
+Set `USE_CAMERA=false` to run arm-only (no camera/model) or `USE_HARDWARE=false`
+for a sim-only pairing. Full details, flags, and troubleshooting:
+[edge_impulse/README.md](edge_impulse/README.md#run-on-the-uno-q-itself-docker).
+
 ## Web Control
 
 Run the UNO Q remote control and camera App Lab apps, then start the dashboard:

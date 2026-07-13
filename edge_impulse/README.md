@@ -169,12 +169,24 @@ agents and DDS discovery works. This is what makes the on-device route simpler
 than Docker Desktop on macOS, where host networking is unavailable.
 
 1. Install Docker on the UNO Q's App Lab Linux OS (arm64).
-2. Copy your **aarch64** `.eim` model to `./models/model.eim` in the repo.
-3. Build and start (the arm64 `ros:jazzy` image runs natively):
+2. **Start the App Lab agent that provides the camera and arm endpoints.** Run
+   the `app_lab/braccio_web_agent` app on the UNO Q. It serves the camera MJPEG
+   stream on `127.0.0.1:8080` and arm control on `127.0.0.1:8765`, which the
+   container connects to. Verify both ports are published to the host:
+
+   ```bash
+   docker ps --format 'table {{.Names}}\t{{.Ports}}'   # expect 0.0.0.0:8080-> and 0.0.0.0:8765->
+   ```
+
+3. Copy your **aarch64** `.eim` model to `./models/model.eim` in the repo (see
+   [models/README.md](../models/README.md)). Its labels must match the item
+   names in [pick_place_workflows.yaml](pick_place_workflows.yaml).
+4. Build and start (the arm64 `ros:jazzy` image runs natively):
 
    ```bash
    cd ~/unoq-braccio
-   docker compose up --build
+   docker compose up -d --build
+   docker compose logs -f ros2
    ```
 
 The container's default command launches
@@ -183,6 +195,26 @@ The container's default command launches
 (`stream_url:=http://127.0.0.1:8080/stream`), the `edgeimpulse_ros` detector,
 `detection_label_bridge`, and `pick_place_executor` — the same
 `/edge_impulse/label` contract and workflow YAML as every other backend.
+
+### Runtime flags
+
+Both are set in `docker-compose.yml` (or override inline, e.g.
+`USE_CAMERA=false docker compose up -d`):
+
+| Variable       | Default  | Effect                                                              |
+| -------------- | -------- | ------------------------------------------------------------------ |
+| `USE_HARDWARE` | `"true"` | Start `tcp_bridge` to the real arm. `false` = sim-only (no arm).   |
+| `USE_CAMERA`   | `"true"` | Start camera + detector + pick-place. `false` = arm-only (no cam). |
+
+With `USE_CAMERA=false` you get just the arm bridge — useful for driving the
+Braccio directly without a camera or model. The `mjpeg_camera_node` also
+retries rather than crashing if the stream is not up yet, so the container
+stays running while you start the web agent.
+
+> **Rebuild after code changes.** The ROS 2 source is copied into the image at
+> build time, so after `git pull` you must run `docker compose up -d --build`.
+> A plain `docker compose up -d` reuses the old image (symptom: a fixed error
+> still appears in the logs).
 
 The Braccio packages and `edgeimpulse_ros` are pure `ament_python`, so the
 in-container `colcon build` is light. It is pinned to a sequential executor

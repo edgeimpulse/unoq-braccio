@@ -12,3 +12,9 @@ edge_impulse/model/
 *.hex
 *.elf
 *.bin
+
+# Edge Impulse model binaries and local secrets (never commit these)
+*.eim
+models/*.eim
+.env
+
