@@ -19,11 +19,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Edge Impulse Linux Python SDK + headless OpenCV/numpy (no GUI deps). The SDK
-# imports pyaudio even for image models, so install it too. The arm64 wheels
-# run natively on the UNO Q (Cortex-A53).
+# Edge Impulse Linux Python SDK + headless OpenCV (no GUI deps). The SDK imports
+# pyaudio even for image models, so install it too. The arm64 wheels run
+# natively on the UNO Q (Cortex-A53).
+#
+# Pin numpy<2 so pip is satisfied by the Debian-managed numpy 1.26 already in the
+# ros:jazzy base image; it has no pip RECORD file, so letting pip try to replace
+# it with numpy 2.x fails to uninstall.
 RUN pip install --no-cache-dir --break-system-packages \
-    edge_impulse_linux pyaudio opencv-python-headless numpy
+    edge_impulse_linux pyaudio opencv-python-headless "numpy<2"
 
 # The base image already ran `rosdep init`.
 RUN rosdep update
