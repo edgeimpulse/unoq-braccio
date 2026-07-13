@@ -68,3 +68,90 @@ Edit `pick_place_workflows.yaml` so labels from your model match the item names
 and drop locations you want.
 
 For Linux `.eim` model testing, see [linux_setup.md](linux_setup.md).
+
+## Alternative backend: `edgeimpulse_ros`
+
+If you prefer the maintained [`edgeimpulse_ros`](https://github.com/edgeimpulse/edgeimpulse-ros)
+package instead of the runner-command node, use
+`edge_impulse_ros_pick_place.launch.py`. It runs the `edgeimpulse_ros` detector
+on `/braccio/camera/image_raw` and a `detection_label_bridge` node that maps the
+detector's `vision_msgs/Detection2DArray` output to the `/edge_impulse/label`
+string the executor already consumes, so the pick/place workflow is unchanged.
+
+Clone `edgeimpulse_ros` into the same workspace and build it, then:
+
+```bash
+source ros2_ws/install/setup.bash
+ros2 launch unoq_braccio_bringup remote.launch.py host:=192.168.1.64 port:=8765
+ros2 launch unoq_braccio_bringup edge_impulse_ros_pick_place.launch.py \
+  stream_url:=http://192.168.1.64:8080/stream \
+  model_path:=/absolute/path/to/model.eim \
+  workflow_file:=edge_impulse/pick_place_workflows.yaml
+```
+
+The bridge picks the highest-scoring detection and publishes its class label
+when the score clears `min_confidence` (default `0.65`). It reads detections
+from `detections_topic` (default `/edgeimpulse_detector/detections`).
+
+## Test on macOS with a ROS 2 container
+
+You do not need a Linux machine to validate the build and the ROS 2 graph. On
+macOS, run the workspace inside a `ros:jazzy` Docker container. On Apple Silicon
+the image runs natively (arm64), so no emulation is required.
+
+> **Note:** Docker Desktop on macOS cannot pass USB serial devices (`/dev/tty*`)
+> into a container, so a directly wired arm is not reachable from the container.
+> The Braccio path here is network-based (the UNO Q web endpoint on port `8765`
+> and the camera stream on port `8080`), so a container reaches real hardware
+> over your LAN through those URLs. For pure wiring tests, inject a synthetic
+> detection as shown below.
+
+Start a container with this repository and `edgeimpulse_ros` mounted into the
+same workspace, building into `/tmp` so the host checkout stays clean:
+
+```bash
+docker run -it --name braccio-test \
+  -v ~/git/ros2-docs-repos/unoq-braccio:/root/unoq-braccio \
+  -v ~/git/ros2-docs-repos/edgeimpulse-ros:/root/unoq-braccio/ros2_ws/src/edgeimpulse_ros \
+  -w /root/unoq-braccio/ros2_ws \
+  ros:jazzy bash
+```
+
+Inside the container, install the dependencies and build:
+
+```bash
+apt update && apt install -y \
+  ros-jazzy-vision-msgs ros-jazzy-diagnostic-msgs \
+  python3-opencv python3-numpy portaudio19-dev python3-pip
+pip install --break-system-packages edge_impulse_linux pyaudio requests
+
+colcon build --symlink-install --build-base /tmp/build --install-base /tmp/install
+source /tmp/install/setup.bash
+```
+
+Open more shells into the same container with `docker exec -it braccio-test bash`,
+then `source /tmp/install/setup.bash` in each. To exercise `detection_label_bridge`
+without any hardware, run the bridge in one shell:
+
+```bash
+ros2 run unoq_braccio_driver detection_label_bridge
+```
+
+Publish a synthetic detection in a second shell:
+
+```bash
+ros2 topic pub --once /edgeimpulse_detector/detections vision_msgs/msg/Detection2DArray \
+  '{detections: [{results: [{hypothesis: {class_id: "red_block", score: 0.92}}], bbox: {center: {position: {x: 100.0, y: 80.0}}, size_x: 40.0, size_y: 40.0}}]}'
+```
+
+Confirm the outputs in a third shell:
+
+```bash
+ros2 topic echo /edge_impulse/label      # data: "red_block"
+ros2 topic echo /edge_impulse/detection  # {"label":"red_block","confidence":0.92,"bbox":{...}}
+```
+
+Re-publish with `score: 0.4` to confirm the bridge stays silent below its
+`min_confidence` (default `0.65`). To test the full chain, run
+`pick_place_executor` with a `workflow_file` and watch `/braccio/joint_command`
+while publishing labels.
