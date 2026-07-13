@@ -15,6 +15,7 @@ DDS discovery work. Requires ``edgeimpulse_ros`` in the same workspace.
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
@@ -22,6 +23,7 @@ from launch_ros.actions import Node
 def generate_launch_description():
     host = LaunchConfiguration("host")
     port = LaunchConfiguration("port")
+    use_hardware = LaunchConfiguration("use_hardware")
     stream_url = LaunchConfiguration("stream_url")
     model_path = LaunchConfiguration("model_path")
     image_topic = LaunchConfiguration("image_topic")
@@ -38,6 +40,12 @@ def generate_launch_description():
             # container runs with host networking.
             DeclareLaunchArgument("host", default_value="127.0.0.1"),
             DeclareLaunchArgument("port", default_value="8765"),
+            DeclareLaunchArgument(
+                "use_hardware",
+                default_value="true",
+                description="Start the tcp_bridge to the real arm. Set false to "
+                "drive the Gazebo sim container only (no physical Braccio).",
+            ),
             # UNO Q camera MJPEG stream, also over localhost.
             DeclareLaunchArgument(
                 "stream_url",
@@ -75,6 +83,7 @@ def generate_launch_description():
                 name="unoq_braccio_tcp_bridge",
                 parameters=[{"host": host, "port": port}],
                 output="screen",
+                condition=IfCondition(use_hardware),
             ),
             Node(
                 package="unoq_braccio_driver",

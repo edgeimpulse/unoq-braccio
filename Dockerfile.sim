@@ -1,0 +1,41 @@
+FROM ros:jazzy-ros-base
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Companion image for the Gazebo simulation, meant to pair with the lean
+# inference container over the shared ROS 2 graph (same ROS_DOMAIN_ID + host
+# networking). Unlike the inference image, this one installs the FULL
+# Gazebo / ros2_control stack, so it is large and is best run on a desktop/
+# laptop that pairs with the UNO Q. It can run headless on the UNO Q, but
+# Gazebo physics is heavy for the 4 GB variant.
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-colcon-common-extensions \
+    python3-rosdep \
+    git \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN rosdep update
+
+WORKDIR /braccio_ws
+COPY ros2_ws/src/ /braccio_ws/src/
+
+# Full simulation dependencies: Gazebo (ros_gz_sim), ros2_control, the
+# controllers, xacro, robot_state_publisher, cv_bridge, ...
+RUN apt-get update && \
+    rosdep install --from-paths src --ignore-src -r -y \
+    --skip-keys "edge_impulse_linux pyaudio" \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN . /opt/ros/$ROS_DISTRO/setup.sh && \
+    colcon build --symlink-install \
+    --executor sequential --parallel-workers 1
+
+SHELL ["/bin/bash", "-c"]
+RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc && \
+    echo "source /braccio_ws/install/setup.bash" >> /root/.bashrc
+
+# Bring up the Gazebo Braccio. It subscribes to the same joint topics the
+# inference container publishes, so the pick-and-place decisions drive the
+# simulated arm. Override with `command:` in compose for a headless server.
+CMD ["bash", "-lc", "source /opt/ros/jazzy/setup.bash && source /braccio_ws/install/setup.bash && ros2 launch unoq_braccio_bringup sim.launch.py"]

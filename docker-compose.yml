@@ -18,6 +18,8 @@ services:
       TERM: xterm-256color
       MODEL_PATH: /models/model.eim
       WORKFLOW_FILE: /config/pick_place_workflows.yaml
+      # Set to "false" to skip the arm bridge and drive the sim container only.
+      USE_HARDWARE: "true"
 
     volumes:
       # Drop your aarch64 .eim model in ./models on the UNO Q.
@@ -30,3 +32,50 @@ services:
     # a v4l2 node at it:
     # devices:
     #   - /dev/video0:/dev/video0
+
+  # ---------------------------------------------------------------------------
+  # Optional Gazebo simulation, enabled with the "sim" profile:
+  #
+  #     docker compose --profile sim up --build
+  #
+  # It shares the ROS 2 graph with the inference container (same
+  # ROS_DOMAIN_ID + host networking), so pick-and-place decisions from the
+  # UNO Q drive the simulated arm. Gazebo is heavy, so this is best run on a
+  # desktop/laptop on the same network as the UNO Q rather than on the 4 GB
+  # UNO Q itself. To pair a laptop sim with a real UNO Q, run the inference
+  # container on the UNO Q and this service on the laptop.
+  #
+  # Sim-only (no physical arm): start the inference service with
+  # USE_HARDWARE=false so it publishes joint commands for the sim to consume.
+  sim:
+    profiles: ["sim"]
+    build:
+      context: .
+      dockerfile: Dockerfile.sim
+    container_name: unoq_braccio_sim
+
+    network_mode: host
+    privileged: true
+
+    stdin_open: true
+    tty: true
+
+    environment:
+      ROS_DOMAIN_ID: 0
+      TERM: xterm-256color
+      # Forward the host X display so the Gazebo GUI shows on a desktop.
+      DISPLAY: ${DISPLAY:-}
+      QT_X11_NO_MITSHM: 1
+
+    volumes:
+      # Share the host X socket so the Gazebo GUI can render (desktop only).
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+
+    # sim.launch.py starts Gazebo with its GUI (gz_args "-r"). Run this on a
+    # desktop/laptop paired with the UNO Q. To run headless on the UNO Q,
+    # start the Gazebo server only, e.g.:
+    # command: >
+    #   bash -lc "source /opt/ros/jazzy/setup.bash &&
+    #   source /braccio_ws/install/setup.bash &&
+    #   gz sim -s -r /braccio_ws/install/unoq_braccio_sim/share/unoq_braccio_sim/worlds/empty.world"
+
