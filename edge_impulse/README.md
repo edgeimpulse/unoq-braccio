@@ -155,3 +155,36 @@ Re-publish with `score: 0.4` to confirm the bridge stays silent below its
 `min_confidence` (default `0.65`). To test the full chain, run
 `pick_place_executor` with a `workflow_file` and watch `/braccio/joint_command`
 while publishing labels.
+
+## Run on the UNO Q itself (Docker)
+
+You can also skip the external host/VM entirely and run the whole
+`edgeimpulse_ros` pipeline in a Docker container **on the 4 GB UNO Q**. The
+container runs the ROS 2 graph; the UNO Q's own App Lab agents keep providing
+the camera MJPEG stream (`127.0.0.1:8080`) and arm control (`127.0.0.1:8765`).
+The repo root ships a `Dockerfile` and `docker-compose.yml` for this.
+
+Because the container uses `network_mode: host`, `localhost` reaches those
+agents and DDS discovery works. This is what makes the on-device route simpler
+than Docker Desktop on macOS, where host networking is unavailable.
+
+1. Install Docker on the UNO Q's App Lab Linux OS (arm64).
+2. Copy your **aarch64** `.eim` model to `./models/model.eim` in the repo.
+3. Build and start (the arm64 `ros:jazzy` image runs natively):
+
+   ```bash
+   cd ~/unoq-braccio
+   docker compose up --build
+   ```
+
+The container's default command launches
+`onboard_edge_impulse_pick_place.launch.py`, which starts the `tcp_bridge`
+(`host:=127.0.0.1`), `mjpeg_camera_node`
+(`stream_url:=http://127.0.0.1:8080/stream`), the `edgeimpulse_ros` detector,
+`detection_label_bridge`, and `pick_place_executor` — the same
+`/edge_impulse/label` contract and workflow YAML as every other backend.
+
+The Braccio packages and `edgeimpulse_ros` are pure `ament_python`, so the
+in-container `colcon build` is light. It is pinned to a sequential executor
+(`--executor sequential --parallel-workers 1`) to stay within RAM on smaller
+UNO Q variants; add swap if you hit memory pressure while building.
