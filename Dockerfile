@@ -40,15 +40,23 @@ RUN mkdir -p src && cd src && \
     git clone https://github.com/edgeimpulse/edgeimpulse-ros.git
 COPY ros2_ws/src/ /braccio_ws/src/
 
-# Resolve ROS deps (vision_msgs, diagnostic_msgs, ...). Skip the pip-provided
-# keys so rosdep doesn't pull the heavy GUI `python3-opencv` chain back in.
-RUN rosdep install --from-paths src --ignore-src -r -y \
-    --skip-keys "edge_impulse_linux pyaudio python3-opencv python3-numpy"
+# Resolve ROS deps for the inference route only. `apt-get update` is required
+# because the earlier layer cleared the apt lists. Skip:
+#   * pip-provided keys (opencv/numpy/EI SDK) so the GUI opencv chain isn't pulled
+#   * the whole Gazebo / ros2_control simulation stack, which comes from
+#     unoq_braccio_sim and is never used on-device. It is huge and won't fit the
+#     UNO Q eMMC. unoq_braccio_sim itself is left in src (so bringup's dependency
+#     on it resolves as a local package) but is skipped at build time below.
+RUN apt-get update && \
+    rosdep install --from-paths src --ignore-src -r -y \
+    --skip-keys "edge_impulse_linux pyaudio python3-opencv python3-numpy \
+ros_gz_sim gz_ros2_control controller_manager joint_trajectory_controller \
+joint_state_broadcaster joint_state_publisher xacro" \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# These packages are pure ament_python, so the build is light enough for the
-# 4 GB UNO Q. Keep it sequential to stay well within RAM on smaller variants.
+# Build only the inference-route packages; skip the Gazebo sim package.
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && \
-    colcon build --symlink-install \
+    colcon build --symlink-install --packages-skip unoq_braccio_sim \
     --executor sequential --parallel-workers 1
 
 SHELL ["/bin/bash", "-c"]
