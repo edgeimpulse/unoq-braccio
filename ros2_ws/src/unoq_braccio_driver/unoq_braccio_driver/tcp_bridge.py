@@ -12,7 +12,7 @@ class TcpBridge(Node):
     def __init__(self) -> None:
         super().__init__("unoq_braccio_tcp_bridge")
         self.declare_parameter("host", "unoq.local")
-        self.declare_parameter("port", "8765")
+        self.declare_parameter("port", 8765)
         self.declare_parameter("command_topic", "/braccio/joint_command")
         self.declare_parameter("timeout", 2.0)
 
