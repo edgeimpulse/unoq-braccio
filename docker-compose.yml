@@ -1,0 +1,32 @@
+services:
+  ros2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: unoq_braccio_edgeimpulse_ros
+
+    # Host networking lets the container reach the UNO Q's own App Lab agents
+    # over localhost (camera 8080, arm control 8765) and lets DDS discovery work.
+    network_mode: host
+    privileged: true
+
+    stdin_open: true
+    tty: true
+
+    environment:
+      ROS_DOMAIN_ID: 0
+      TERM: xterm-256color
+      MODEL_PATH: /models/model.eim
+      WORKFLOW_FILE: /config/pick_place_workflows.yaml
+
+    volumes:
+      # Drop your aarch64 .eim model in ./models on the UNO Q.
+      - ./models:/models:ro
+      # Pick-and-place label -> pose workflows.
+      - ./edge_impulse:/config:ro
+
+    # If you prefer to grab frames straight from the camera device instead of
+    # the App Lab MJPEG stream, pass it through and point mjpeg_camera_node /
+    # a v4l2 node at it:
+    # devices:
+    #   - /dev/video0:/dev/video0

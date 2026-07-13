@@ -1,0 +1,15 @@
+.git
+.github
+app_lab
+web_app
+firmware
+docs
+scripts
+images
+*.md
+ros2_ws/build
+ros2_ws/install
+ros2_ws/log
+**/__pycache__
+**/*.pyc
+models
