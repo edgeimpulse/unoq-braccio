@@ -18,7 +18,9 @@ class MjpegCameraNode(Node):
 
         self.capture = cv2.VideoCapture(self.stream_url)
         if not self.capture.isOpened():
-            raise RuntimeError(f"Could not open MJPEG stream {self.stream_url}")
+            self.get_logger().warning(
+                f"MJPEG stream {self.stream_url} not available yet; will keep retrying"
+            )
 
         self.bridge = CvBridge()
         self.publisher = self.create_publisher(Image, "/braccio/camera/image_raw", 10)
@@ -26,6 +28,16 @@ class MjpegCameraNode(Node):
         self.get_logger().info(f"MJPEG camera publishing from {self.stream_url}")
 
     def publish_frame(self) -> None:
+        if not self.capture.isOpened():
+            self.capture.release()
+            self.capture = cv2.VideoCapture(self.stream_url)
+            if not self.capture.isOpened():
+                self.get_logger().warning(
+                    f"MJPEG stream {self.stream_url} unavailable; retrying"
+                )
+                return
+            self.get_logger().info(f"Connected to MJPEG stream {self.stream_url}")
+
         ok, frame = self.capture.read()
         if not ok:
             self.get_logger().warning("MJPEG frame read failed; reconnecting")
