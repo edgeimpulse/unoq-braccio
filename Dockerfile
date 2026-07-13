@@ -45,8 +45,10 @@ COPY ros2_ws/src/ /braccio_ws/src/
 #   * pip-provided keys (opencv/numpy/EI SDK) so the GUI opencv chain isn't pulled
 #   * the whole Gazebo / ros2_control simulation stack, which comes from
 #     unoq_braccio_sim and is never used on-device. It is huge and won't fit the
-#     UNO Q eMMC. unoq_braccio_sim itself is left in src (so bringup's dependency
-#     on it resolves as a local package) but is skipped at build time below.
+#     UNO Q eMMC.
+# unoq_braccio_sim is ignored below (not just skipped) so colcon drops it from
+# the dependency graph entirely; bringup only needs it at runtime for the sim
+# launch, which the inference container never uses.
 RUN apt-get update && \
     rosdep install --from-paths src --ignore-src -r -y \
     --skip-keys "edge_impulse_linux pyaudio python3-opencv python3-numpy \
@@ -54,9 +56,10 @@ ros_gz_sim gz_ros2_control controller_manager joint_trajectory_controller \
 joint_state_broadcaster joint_state_publisher xacro" \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Build only the inference-route packages; skip the Gazebo sim package.
+# Build only the inference-route packages; ignore the Gazebo sim package so
+# colcon removes it from the graph (skip alone still expects its install).
 RUN . /opt/ros/$ROS_DISTRO/setup.sh && \
-    colcon build --symlink-install --packages-skip unoq_braccio_sim \
+    colcon build --symlink-install --packages-ignore unoq_braccio_sim \
     --executor sequential --parallel-workers 1
 
 SHELL ["/bin/bash", "-c"]
@@ -66,8 +69,10 @@ RUN echo "source /opt/ros/jazzy/setup.bash" >> /root/.bashrc && \
 # Model + workflow are provided by volume mounts (see docker-compose.yml).
 ENV MODEL_PATH=/models/model.eim
 ENV WORKFLOW_FILE=/config/pick_place_workflows.yaml
+# Set USE_HARDWARE=false to skip the arm bridge and drive the sim container only.
+ENV USE_HARDWARE=true
 
 # On-device pick-and-place with edgeimpulse_ros. The UNO Q's own App Lab agents
 # provide the camera (127.0.0.1:8080) and arm control (127.0.0.1:8765); host
 # networking lets the container reach them and lets DDS discovery work.
-CMD ["bash", "-lc", "source /opt/ros/jazzy/setup.bash && source /braccio_ws/install/setup.bash && ros2 launch unoq_braccio_bringup onboard_edge_impulse_pick_place.launch.py model_path:=$MODEL_PATH workflow_file:=$WORKFLOW_FILE"]
+CMD ["bash", "-lc", "source /opt/ros/jazzy/setup.bash && source /braccio_ws/install/setup.bash && ros2 launch unoq_braccio_bringup onboard_edge_impulse_pick_place.launch.py model_path:=$MODEL_PATH workflow_file:=$WORKFLOW_FILE use_hardware:=$USE_HARDWARE"]
