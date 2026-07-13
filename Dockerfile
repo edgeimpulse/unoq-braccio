@@ -71,8 +71,10 @@ ENV MODEL_PATH=/models/model.eim
 ENV WORKFLOW_FILE=/config/pick_place_workflows.yaml
 # Set USE_HARDWARE=false to skip the arm bridge and drive the sim container only.
 ENV USE_HARDWARE=true
+# Set USE_CAMERA=false to run arm-only (skips camera, detector and pick-place).
+ENV USE_CAMERA=true
 
 # On-device pick-and-place with edgeimpulse_ros. The UNO Q's own App Lab agents
 # provide the camera (127.0.0.1:8080) and arm control (127.0.0.1:8765); host
 # networking lets the container reach them and lets DDS discovery work.
-CMD ["bash", "-lc", "source /opt/ros/jazzy/setup.bash && source /braccio_ws/install/setup.bash && ros2 launch unoq_braccio_bringup onboard_edge_impulse_pick_place.launch.py model_path:=$MODEL_PATH workflow_file:=$WORKFLOW_FILE use_hardware:=$USE_HARDWARE"]
+CMD ["bash", "-lc", "source /opt/ros/jazzy/setup.bash && source /braccio_ws/install/setup.bash && ros2 launch unoq_braccio_bringup onboard_edge_impulse_pick_place.launch.py model_path:=$MODEL_PATH workflow_file:=$WORKFLOW_FILE use_hardware:=$USE_HARDWARE use_camera:=$USE_CAMERA"]

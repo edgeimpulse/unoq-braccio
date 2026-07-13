@@ -24,6 +24,7 @@ def generate_launch_description():
     host = LaunchConfiguration("host")
     port = LaunchConfiguration("port")
     use_hardware = LaunchConfiguration("use_hardware")
+    use_camera = LaunchConfiguration("use_camera")
     stream_url = LaunchConfiguration("stream_url")
     model_path = LaunchConfiguration("model_path")
     image_topic = LaunchConfiguration("image_topic")
@@ -45,6 +46,12 @@ def generate_launch_description():
                 default_value="true",
                 description="Start the tcp_bridge to the real arm. Set false to "
                 "drive the Gazebo sim container only (no physical Braccio).",
+            ),
+            DeclareLaunchArgument(
+                "use_camera",
+                default_value="true",
+                description="Start the camera, Edge Impulse detector and "
+                "pick-and-place nodes. Set false to run arm-only (no camera).",
             ),
             # UNO Q camera MJPEG stream, also over localhost.
             DeclareLaunchArgument(
@@ -91,6 +98,7 @@ def generate_launch_description():
                 name="unoq_braccio_mjpeg_camera",
                 parameters=[{"stream_url": stream_url}],
                 output="screen",
+                condition=IfCondition(use_camera),
             ),
             Node(
                 package="edgeimpulse_ros",
@@ -107,6 +115,7 @@ def generate_launch_description():
                     }
                 ],
                 output="screen",
+                condition=IfCondition(use_camera),
             ),
             Node(
                 package="unoq_braccio_driver",
@@ -119,6 +128,7 @@ def generate_launch_description():
                     }
                 ],
                 output="screen",
+                condition=IfCondition(use_camera),
             ),
             Node(
                 package="unoq_braccio_driver",
@@ -126,6 +136,7 @@ def generate_launch_description():
                 name="unoq_braccio_pick_place_executor",
                 parameters=[{"workflow_file": workflow_file}],
                 output="screen",
+                condition=IfCondition(use_camera),
             ),
         ]
     )

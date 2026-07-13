@@ -20,6 +20,8 @@ services:
       WORKFLOW_FILE: /config/pick_place_workflows.yaml
       # Set to "false" to skip the arm bridge and drive the sim container only.
       USE_HARDWARE: "true"
+      # Set to "false" to run arm-only (skips camera, detector and pick-place).
+      USE_CAMERA: "true"
 
     volumes:
       # Drop your aarch64 .eim model in ./models on the UNO Q.
