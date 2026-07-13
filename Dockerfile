@@ -6,10 +6,15 @@ ENV DEBIAN_FRONTEND=noninteractive
 # pip below as the headless wheel. The apt `python3-opencv` package drags in
 # ~900 MB of Qt/Mesa/X11 GUI dependencies that don't fit on the UNO Q's small
 # eMMC and aren't needed on a headless device.
+#
+# build-essential + python3-dev + portaudio19-dev are required because pyaudio
+# has no prebuilt arm64 wheel and is compiled from source against portaudio.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-colcon-common-extensions \
     python3-rosdep \
     python3-pip \
+    python3-dev \
+    build-essential \
     portaudio19-dev \
     git \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
