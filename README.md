@@ -312,6 +312,15 @@ Set `USE_CAMERA=false` to run arm-only (no camera/model) or `USE_HARDWARE=false`
 for a sim-only pairing. Full details, flags, and troubleshooting:
 [edge_impulse/README.md](edge_impulse/README.md#run-on-the-uno-q-itself-docker).
 
+> **`MJPEG stream http://127.0.0.1:8080/stream unavailable; retrying`** means the
+> camera stream on `:8080` isn't being served. The arm-only
+> `app_lab/braccio_remote_agent` serves **only** `:8765` (arm control), not the
+> camera. Start `app_lab/braccio_web_agent` instead (it serves both `:8080` and
+> `:8765`), or run `app_lab/usb_camera_streamer` alongside your arm agent, then
+> the `mjpeg_camera_node` will connect. Verify from the UNO Q with
+> `curl -sI http://127.0.0.1:8080/stream`. To run without any camera, set
+> `USE_CAMERA=false`.
+
 ## Web Control
 
 Run the UNO Q remote control and camera App Lab apps, then start the dashboard:
