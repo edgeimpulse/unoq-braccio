@@ -57,11 +57,32 @@ def loop():
                 time.sleep(0.05)
                 continue
 
+            # Keep the connection open and process one command per line until
+            # the client disconnects. The drawing client sends many M commands
+            # over a single connection, so closing after the first one would
+            # break the pipe on the second move.
             with client:
-                data = client.recv(128).decode("ascii", errors="replace")
-                response = handle_command(data)
-                client.sendall((response + "\n").encode("ascii"))
-                print(f"{address[0]}: {data.strip()} -> {response}")
+                buffer = ""
+                while True:
+                    try:
+                        chunk = client.recv(128).decode("ascii", errors="replace")
+                    except OSError:
+                        break
+                    if not chunk:
+                        break  # client closed the connection
+                    buffer += chunk
+                    while "\n" in buffer:
+                        line, buffer = buffer.split("\n", 1)
+                        line = line.strip()
+                        if not line:
+                            continue
+                        response = handle_command(line)
+                        try:
+                            client.sendall((response + "\n").encode("ascii"))
+                        except OSError:
+                            buffer = ""
+                            break
+                        print(f"{address[0]}: {line} -> {response}")
 
 
 App.run(user_loop=loop)
