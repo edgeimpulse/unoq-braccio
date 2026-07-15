@@ -14,6 +14,10 @@ ROS 2 host -> tcp_bridge -> UNO Q agent -> servos
 <img width="800" alt="image" alt="Screenshot 2026-06-16 000253" src="https://github.com/user-attachments/assets/7736b383-4374-40f8-bcf9-347998eaff60" />
 </p>
 
+#Wrist Mount camera:
+
+https://www.thingiverse.com/thing:7383497
+
 # Actual Braccio
 <p align="center">
 <img width="800" alt="image"  alt="IMG_20260615_142606610_HDR~2" src="https://github.com/user-attachments/assets/db8d983e-142a-4fbe-8bbe-c46fc83fc3e3" />
